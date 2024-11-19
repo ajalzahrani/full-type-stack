@@ -1,30 +1,20 @@
-import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Signin from "./pages/signin";
 import Signup from "./pages/signup";
 
-import { hc } from "hono/client";
-import { type ApiRoutes } from "@server/app";
 import { Button } from "./components/ui/button";
 import { Card } from "./components/ui/card";
 import { CardHeader, CardTitle, CardContent } from "./components/ui/card";
 import { Link } from "react-router-dom";
+import { getTotalUsers } from "./lib/api";
 
-const client = hc<ApiRoutes>("/");
-
-export const api = client.api;
+import { useQuery } from "@tanstack/react-query";
 
 function App() {
-  const [totalUsers, setTotalUsers] = useState(-1);
-
-  useEffect(() => {
-    async function fetchTotalUsers() {
-      const res = await api.users.total.$get();
-      const data = await res.json();
-      setTotalUsers(data.total);
-    }
-    fetchTotalUsers();
-  }, []);
+  const { data, isPending, error } = useQuery({
+    queryKey: ["totalUsers"],
+    queryFn: getTotalUsers,
+  });
 
   return (
     <Routes>
@@ -34,7 +24,10 @@ function App() {
           <div className="flex justify-center items-center h-screen">
             <Card className="w-96">
               <CardHeader>
-                <CardTitle>Total Users: {totalUsers}</CardTitle>
+                <CardTitle>
+                  Total Users: {isPending ? "..." : data}
+                  <p className="text-red-500 text-xs">{error?.message}</p>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-4">

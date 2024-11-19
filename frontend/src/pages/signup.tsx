@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -25,11 +24,15 @@ import {
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
-import { api } from "@/api/routes";
+import { createUser } from "@/lib/api";
+
+import { useMutation } from "@tanstack/react-query";
 
 function Signup() {
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { mutate, error, isSuccess } = useMutation({
+    mutationFn: createUser,
+  });
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof insertUserSchema>>({
     resolver: zodResolver(insertUserSchema),
@@ -43,24 +46,7 @@ function Signup() {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof insertUserSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-    const res = await api.users.$post({
-      json: {
-        username: values.username,
-        password: values.password,
-        name: values.name,
-        age: values.age,
-      },
-    });
-
-    if (!res.ok) {
-      setError(res.statusText);
-      return;
-    }
-
-    setSuccess("User created successfully");
+    mutate(values);
   }
 
   return (
@@ -139,8 +125,8 @@ function Signup() {
                 <Button type="submit">Submit</Button>
               </div>
             </form>
-            {error && <div>{error}</div>}
-            {success && <div>{success}</div>}
+            {error && <div>{error.message}</div>}
+            {isSuccess && <div>User created successfully</div>}
           </Form>
         </CardContent>
       </Card>
