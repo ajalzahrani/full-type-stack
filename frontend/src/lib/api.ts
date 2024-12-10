@@ -1,12 +1,13 @@
 import { hc } from "hono/client";
-import { type ApiRoutes } from "@server/app";
+import { type AppType } from "@server/app";
 import {
   insertUserSchema,
   requestUserByUsernameAndPasswordSchema,
+  insertResourceSchema,
 } from "@server/types";
 import { z } from "zod";
 
-const client = hc<ApiRoutes>("/");
+const client = hc<AppType>("/");
 
 export const api = client.api;
 
@@ -22,7 +23,7 @@ export async function getTotalUsers() {
 }
 
 export async function createUser(user: z.infer<typeof insertUserSchema>) {
-  const res = await api.users.$post({ json: user });
+  const res = await api.users.signup.$post({ json: user });
 
   if (!res.ok) {
     throw new Error(res.statusText);
@@ -41,4 +42,10 @@ export async function loginUser(
   }
 
   return res.json();
+}
+
+export async function createResource(
+  resource: z.infer<typeof insertResourceSchema>
+) {
+  const res = await api.users.create.$post({ json: resource });
 }
