@@ -3,6 +3,9 @@ import { logger } from "hono/logger";
 import { HTTPException } from "hono/http-exception";
 import { serveStatic } from "hono/bun";
 import usersRoute from "./routes/users.route";
+import resourceRoute from "./routes/resource.route";
+import resourceConfigurationRoute from "./routes/resourceConfiguration.route";
+import appointmentRoute from "./routes/appointment.route";
 
 const app = new Hono();
 
@@ -13,7 +16,11 @@ app.use("*", logger());
 // const apiRoutes = app.basePath("/api");
 // apiRoutes.route("/", routes);
 
-const apiRoutes = app.basePath("/api").route("/users", usersRoute);
+const routes = app
+  .route("/api/users", usersRoute)
+  .route("/api/resource", resourceRoute)
+  .route("/api/resourceConfiguration", resourceConfigurationRoute)
+  .route("/api/appointment", appointmentRoute);
 
 // static files
 app.get("*", serveStatic({ root: "./frontend/dist" }));
@@ -29,4 +36,4 @@ app.onError((err, c) => {
 });
 
 export default app;
-export type ApiRoutes = typeof apiRoutes;
+export type AppType = typeof routes;

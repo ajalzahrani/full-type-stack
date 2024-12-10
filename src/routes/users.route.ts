@@ -44,7 +44,7 @@ const usersRoute = new Hono()
     // return user
     return c.json(user);
   })
-  .post("/", zValidator("json", insertUserSchema), async (c) => {
+  .post("/signup", zValidator("json", insertUserSchema), async (c) => {
     // get data from request
     const user = c.req.valid("json");
 
