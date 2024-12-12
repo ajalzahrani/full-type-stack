@@ -11,3 +11,19 @@ Content-Type: application/json
 ### Users
 
 GET http://localhost:3030/api/users
+
+
+### Resources
+
+GET http://localhost:3030/api/resources
+
+### POST Resources
+
+POST http://localhost:3030/api/resources
+Content-Type: application/json
+
+{
+    "name": "Resource 1",
+    "description": "Description 1",
+    "resourceType": "Resource Type 1"
+}

@@ -7,6 +7,7 @@ import Inbox from "./pages/inbox";
 import Calendar from "./pages/calendar";
 import Search from "./pages/search";
 import Settings from "./pages/settings";
+import Resources from "./pages/resources";
 import ProtectedLayout from "./protected-layout";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
 
       {/* Protected routes */}
       <Route element={<ProtectedLayout />}>
+        <Route path="/resources" element={<Resources />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/calendar" element={<Calendar />} />
