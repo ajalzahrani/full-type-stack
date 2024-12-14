@@ -167,7 +167,7 @@ export const app = new Hono()
   // delete resource
   .delete(
     "/api/resources/:id",
-    zValidator("param", scehma.requestResourceByIdSchema),
+    zValidator("param", z.object({ id: z.string() })),
     async (c) => {
       const { id } = c.req.valid("param");
       await db.delete(Resources).where(eq(Resources.id, Number(id)));
@@ -176,7 +176,15 @@ export const app = new Hono()
   )
   // get resource configuration
   .get("/api/resourceConfiguration", async (c) => {
-    const resourceConfiguration = await db.select().from(ResourceConfiguration);
+    const resourceConfiguration = await db
+      .select()
+      .from(ResourceConfiguration)
+      .innerJoin(Resources, eq(ResourceConfiguration.resourceId, Resources.id))
+      .innerJoin(
+        Facilities,
+        eq(ResourceConfiguration.facilityId, Facilities.id)
+      )
+      .orderBy(desc(ResourceConfiguration.resourceId));
     return c.json(resourceConfiguration);
   })
   // get resource configuration by id
@@ -199,11 +207,9 @@ export const app = new Hono()
     "/api/resourceConfiguration",
     zValidator("json", scehma.insertResourceConfigurationSchema),
     async (c) => {
-      // create resource
       const resourceConfiguration = c.req.valid("json");
 
       try {
-        // insert resource into db
         await db.insert(ResourceConfiguration).values(resourceConfiguration);
       } catch (error) {
         throw new HTTPException(400, {
@@ -232,7 +238,7 @@ export const app = new Hono()
   // delete resource configuration
   .delete(
     "/api/resourceConfiguration/:id",
-    zValidator("param", scehma.requestResourceConfigurationByIdSchema),
+    zValidator("param", z.object({ id: z.string() })),
     async (c) => {
       const { id } = c.req.valid("param");
       await db
@@ -298,7 +304,7 @@ export const app = new Hono()
   // delete facility
   .delete(
     "/api/facilities/:id",
-    zValidator("param", scehma.requestFacilityByIdSchema),
+    zValidator("param", z.object({ id: z.string() })),
     async (c) => {
       const { id } = c.req.valid("param");
       await db.delete(Facilities).where(eq(Facilities.id, Number(id)));
@@ -363,7 +369,7 @@ export const app = new Hono()
   // delete appointment
   .delete(
     "/api/appointments/:id",
-    zValidator("param", scehma.requestAppointmentByIdSchema),
+    zValidator("param", z.object({ id: z.string() })),
     async (c) => {
       const { id } = c.req.valid("param");
       await db.delete(Appointments).where(eq(Appointments.id, Number(id)));

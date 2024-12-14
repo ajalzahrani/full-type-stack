@@ -5,6 +5,8 @@ import {
   insertResourceSchema,
   insertUserSchema,
   requestUserByUsernameAndPasswordSchema,
+  ResourceConfigurationFormData,
+  resourceConfigurationFormSchema,
 } from "@server/types";
 import { hc } from "hono/client";
 import { AppType } from "@server/app";
@@ -254,10 +256,20 @@ export async function getResourceConfigurationById(id: number) {
 }
 
 export async function createResourceConfiguration(
-  resourceConfiguration: z.infer<typeof insertResourceConfigurationSchema>
+  formData: z.infer<typeof insertResourceConfigurationSchema>
 ) {
+  const transformedData = {
+    ...formData,
+    resourceId: Number(formData.resourceId),
+    facilityId: Number(formData.facilityId),
+    estimatedWaitingTime: Number(formData.estimatedWaitingTime),
+    statusId: Number(formData.statusId),
+    startDate: formData.startDate ? new Date(formData.startDate) : null,
+    endDate: formData.endDate ? new Date(formData.endDate) : null,
+  };
+
   const res = await client.api.resourceConfiguration.$post({
-    json: resourceConfiguration,
+    json: transformedData,
   });
 
   if (!res.ok) {

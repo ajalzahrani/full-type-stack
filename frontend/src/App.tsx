@@ -3,13 +3,14 @@ import Signin from "./pages/signin";
 import Signup from "./pages/signup";
 import Dashboard from "./pages/dashboard";
 import LandingPage from "./pages/lading-page";
-import Inbox from "./pages/inbox";
 import Calendar from "./pages/calendar";
 import Search from "./pages/search";
 import Settings from "./pages/settings";
 import Resources from "./pages/resources";
 import ProtectedLayout from "./protected-layout";
-
+import Facilities from "./pages/facilities";
+import ResourceConfigurations from "./pages/resource-configs";
+import Appointments from "./pages/appointments";
 function App() {
   return (
     <Routes>
@@ -21,11 +22,16 @@ function App() {
       {/* Protected routes */}
       <Route element={<ProtectedLayout />}>
         <Route path="/resources" element={<Resources />} />
+        <Route path="/facilities" element={<Facilities />} />
+        <Route
+          path="/resource-configurations"
+          element={<ResourceConfigurations />}
+        />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/inbox" element={<Inbox />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/search" element={<Search />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/appointments" element={<Appointments />} />
       </Route>
     </Routes>
   );

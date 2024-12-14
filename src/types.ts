@@ -57,7 +57,25 @@ export const requestFacilityByIdSchema = selectFacilitySchema.pick({
 // RESOURCE CONFIGURATION TABLE
 export const insertResourceConfigurationSchema = createInsertSchema(
   schema.ResourceConfiguration
-);
+).extend({
+  resourceId: z.union([z.string(), z.number()]).transform((val) => Number(val)),
+  facilityId: z.union([z.string(), z.number()]).transform((val) => Number(val)),
+  estimatedWaitingTime: z
+    .union([z.string(), z.number()])
+    .transform((val) => Number(val)),
+  statusId: z.union([z.string(), z.number()]).transform((val) => Number(val)),
+  startDate: z
+    .union([z.string(), z.date()])
+    .transform((val) => (typeof val === "string" ? new Date(val) : val))
+    .nullable(),
+  endDate: z
+    .union([z.string(), z.date()])
+    .transform((val) => (typeof val === "string" ? new Date(val) : val))
+    .nullable(),
+  weekDays: z.string(),
+  blocked: z.boolean().optional(),
+});
+
 export const selectResourceConfigurationSchema = createSelectSchema(
   schema.ResourceConfiguration
 );
