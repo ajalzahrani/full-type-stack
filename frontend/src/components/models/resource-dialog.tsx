@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import ResourceForm from "../froms/resource-form";
+import ResourceForm from "@/components/froms/resource-form";
 import { insertResourceSchema } from "@server/types";
 import { z } from "zod";
 interface ResourceDialogProps {

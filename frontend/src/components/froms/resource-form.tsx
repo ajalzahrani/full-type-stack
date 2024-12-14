@@ -8,11 +8,15 @@ import CustomFormField, { FormFieldType } from "./form";
 import SubmitButton from "../submit-button";
 
 import { Form } from "../ui/form";
+
 import { insertResourceSchema } from "@server/types";
 import { createResource, updateResource } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { ResourceTypes } from "@/constants";
+import { SelectItem } from "@/components/ui/select";
+import { SelectGroup } from "@/components/ui/select";
 
 interface ResourceFormProps {
   defaultValues?: z.infer<typeof insertResourceSchema>;
@@ -90,14 +94,23 @@ function ResourceForm({ defaultValues, onSuccess }: ResourceFormProps) {
           name="description"
         />
 
-        <CustomFormField
-          fieldType={FormFieldType.INPUT}
-          label="Resource Type"
-          placeholder="Resource Type"
-          description="Resource Type"
-          control={form.control}
-          name="resourceType"
-        />
+        <section className="space-y-6">
+          <CustomFormField
+            fieldType={FormFieldType.SELECT}
+            control={form.control}
+            name="resourceType"
+            label="Resource Type"
+            placeholder="Resource Type"
+            description="Resource Type">
+            <SelectGroup>
+              {ResourceTypes.map((resourceType) => (
+                <SelectItem key={resourceType.id} value={resourceType.name}>
+                  {resourceType.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </CustomFormField>
+        </section>
 
         <SubmitButton isLoading={isPending || isUpdating}>
           {defaultValues?.id ? "Update" : "Add"}
