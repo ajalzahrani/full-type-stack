@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { E164Number } from "libphonenumber-js/core";
-import ReactDatePicker from "react-datepicker";
 import { Control } from "react-hook-form";
 import PhoneInput from "react-phone-number-input";
 
@@ -29,6 +28,7 @@ export enum FormFieldType {
   DATE_PICKER = "datePicker",
   SELECT = "select",
   SKELETON = "skeleton",
+  TIME_PICKER = "timePicker",
 }
 
 interface CustomProps {
@@ -112,46 +112,42 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
       );
     case FormFieldType.DATE_PICKER:
       return (
-        <div className="flex rounded-md border border-dark-500 bg-dark-400">
-          {/* <Image
-            src="/assets/icons/calendar.svg"
-            height={24}
-            width={24}
-            alt="user"
-            className="ml-2"
-          /> */}
-          <FormControl>
-            <ReactDatePicker
-              showTimeSelect={props.showTimeSelect ?? false}
-              selected={field.value}
-              onChange={(date: Date | null) => field.onChange(date)}
-              timeInputLabel="Time:"
-              dateFormat={props.dateFormat ?? "MM/dd/yyyy"}
-              wrapperClassName="date-picker"
-            />
-          </FormControl>
-        </div>
+        <FormControl>
+          <Input
+            value={field.value}
+            placeholder={props.placeholder}
+            type="date"
+            onChange={field.onChange}
+            className="time-picker"
+          />
+        </FormControl>
       );
     case FormFieldType.SELECT:
       return (
-        <FormControl>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <FormControl>
-              <SelectTrigger className="shad-select-trigger">
-                <SelectValue placeholder={props.placeholder} />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent className="shad-select-content">
-              {props.children}
-            </SelectContent>
-          </Select>
-          {props.description && (
-            <p className="text-xs text-gray-500">{props.description}</p>
-          )}
-        </FormControl>
+        <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <SelectTrigger>
+            <SelectValue
+              placeholder={props.placeholder}
+              // defaultValue={field.value ? field.value.toString() : undefined}
+            />
+          </SelectTrigger>
+          <SelectContent>{props.children}</SelectContent>
+        </Select>
       );
     case FormFieldType.SKELETON:
       return props.renderSkeleton ? props.renderSkeleton(field) : null;
+    case FormFieldType.TIME_PICKER:
+      return (
+        <FormControl>
+          <Input
+            value={field.value}
+            placeholder={props.placeholder}
+            type="time"
+            onChange={field.onChange}
+            className="time-picker"
+          />
+        </FormControl>
+      );
     default:
       return null;
   }
