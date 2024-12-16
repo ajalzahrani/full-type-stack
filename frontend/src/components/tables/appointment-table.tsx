@@ -13,8 +13,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
 import AppointmentDialog from "@/components/models/appointment-dialog";
-import { insertAppointmentSchema } from "@server/types";
-import { z } from "zod";
+import { FormAppointmentType } from "@server/types/appointment-types";
+import { formatDateForInput, formatTimeForInput } from "@/lib/datetime-format";
 
 function AppointmentTable() {
   const queryClient = useQueryClient();
@@ -42,7 +42,7 @@ function AppointmentTable() {
   });
 
   const [editingAppointment, setEditingAppointment] = useState<
-    z.infer<typeof insertAppointmentSchema> | undefined
+    FormAppointmentType | undefined
   >(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -59,15 +59,31 @@ function AppointmentTable() {
         </TableHeader>
         <TableBody>
           {data?.map((appointment) => (
-            <TableRow key={appointment.id}>
-              <TableCell>{appointment.name}</TableCell>
-              <TableCell>{appointment.description}</TableCell>
-              <TableCell>{appointment.resourceType}</TableCell>
+            <TableRow key={appointment.Resources?.name}>
+              <TableCell>{appointment.Facilities?.name}</TableCell>
+              <TableCell>{appointment.Appointments.startTime}</TableCell>
               <TableCell>
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setEditingAppointment(appointment);
+                    setEditingAppointment({
+                      ...appointment.Appointments,
+                      id: appointment.Appointments.id.toString(),
+                      resourceId: appointment.Resources?.id.toString() || "",
+                      appointmentDate: formatDateForInput(
+                        appointment.Appointments.appointmentDate
+                      ),
+                      startTime: formatTimeForInput(
+                        appointment.Appointments.startTime
+                      ),
+                      endTime: formatTimeForInput(
+                        appointment.Appointments.endTime
+                      ),
+                      facilityId: appointment.Facilities?.id.toString() || "",
+                      patientId: appointment.Patients?.id.toString() || "",
+                      typeId: appointment.AppointmentTypes?.id.toString() || "",
+                      notes: appointment.Appointments.notes || "",
+                    });
                     setDialogOpen(true);
                   }}>
                   Edit

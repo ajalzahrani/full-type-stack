@@ -1,13 +1,28 @@
-CREATE TABLE `Appointments` (
+CREATE TABLE `AppointmentTypes` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`resourceConfigId` integer NOT NULL,
-	`patientId` integer NOT NULL,
-	`appointmentTime` integer NOT NULL,
-	`status` text NOT NULL,
-	`typeId` integer,
+	`name` text NOT NULL,
+	`duration` integer NOT NULL,
 	`updatedAt` text,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP),
 	`deletedAt` text
+);
+--> statement-breakpoint
+CREATE TABLE `Appointments` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`resourceId` integer NOT NULL,
+	`patientId` integer NOT NULL,
+	`facilityId` integer,
+	`typeId` integer NOT NULL,
+	`timestamp` integer NOT NULL,
+	`status` text DEFAULT 'scheduled' NOT NULL,
+	`notes` text,
+	`updatedAt` text,
+	`createdAt` text DEFAULT (CURRENT_TIMESTAMP),
+	`deletedAt` text,
+	FOREIGN KEY (`resourceId`) REFERENCES `Resources`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`patientId`) REFERENCES `Patients`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`facilityId`) REFERENCES `Facilities`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`typeId`) REFERENCES `AppointmentTypes`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `Facilities` (
@@ -19,6 +34,23 @@ CREATE TABLE `Facilities` (
 	`deletedAt` text
 );
 --> statement-breakpoint
+CREATE TABLE `Patients` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`firstName` text NOT NULL,
+	`lastName` text NOT NULL,
+	`timestamp` integer NOT NULL,
+	`gender` text,
+	`email` text,
+	`phone` text,
+	`address` text,
+	`medicalRecordNumber` text NOT NULL,
+	`blocked` integer DEFAULT false,
+	`updatedAt` text,
+	`createdAt` text DEFAULT (CURRENT_TIMESTAMP),
+	`deletedAt` text
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `Patients_medicalRecordNumber_unique` ON `Patients` (`medicalRecordNumber`);--> statement-breakpoint
 CREATE TABLE `Posts` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`title` text NOT NULL,
@@ -32,6 +64,20 @@ CREATE TABLE `Profiles` (
 	`bio` text NOT NULL,
 	`userId` integer,
 	FOREIGN KEY (`userId`) REFERENCES `Users`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `ResourceAvailability` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`resourceId` integer NOT NULL,
+	`startTime` text NOT NULL,
+	`endTime` text NOT NULL,
+	`timestamp` integer,
+	`weekDays` text NOT NULL,
+	`isRecurring` integer DEFAULT true NOT NULL,
+	`updatedAt` text,
+	`createdAt` text DEFAULT (CURRENT_TIMESTAMP),
+	`deletedAt` text,
+	FOREIGN KEY (`resourceId`) REFERENCES `Resources`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `ResourceConfigurations` (

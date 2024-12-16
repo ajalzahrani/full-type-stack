@@ -10,10 +10,23 @@ import {
   ResourceConfiguration,
   Facilities,
   Appointments,
+  Patients,
+  AppointmentTypes,
+  ResourceAvailability,
 } from "./db/schema";
+import {
+  convertFormResourceAvailabilityToDBResourceAvailability,
+  DBResourceAvailabilitySchema,
+  FormResourceAvailabilitySchema,
+} from "./types/resource-availability-types";
+import { DBUserSchema } from "./types/user-types";
 import db from "./db";
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, gte, lte } from "drizzle-orm";
 import { z } from "zod";
+import {
+  convertFormAppointmentToDBAppointment,
+  FormAppointmentSchema,
+} from "./types/appointment-types";
 
 export const app = new Hono()
 
@@ -36,7 +49,7 @@ export const app = new Hono()
   })
   .get(
     "/api/users/:id",
-    zValidator("param", scehma.requestUserByIdSchema),
+    zValidator("param", z.object({ id: z.string() })),
     async (c) => {
       // get id from params
       const { id } = c.req.valid("param");
@@ -45,7 +58,7 @@ export const app = new Hono()
       const user = await db
         .select()
         .from(Users)
-        .where(eq(Users.id, id))
+        .where(eq(Users.id, Number(id)))
         .limit(1);
 
       if (user.length === 0) {
@@ -58,29 +71,28 @@ export const app = new Hono()
       return c.json(user);
     }
   )
-  .post(
-    "/api/users/signup",
-    zValidator("json", scehma.insertUserSchema),
-    async (c) => {
-      // get data from request
-      const user = c.req.valid("json");
+  .post("/api/users/signup", zValidator("json", DBUserSchema), async (c) => {
+    // get data from request
+    const user = c.req.valid("json");
 
-      try {
-        // insert user into db
-        await db.insert(Users).values(user);
-      } catch (error) {
-        throw new HTTPException(400, {
-          res: c.json({ error: "User not created" }, 400),
-        });
-      }
-
-      // return user
-      return c.json({ message: "User created" });
+    try {
+      // insert user into db
+      await db.insert(Users).values(user);
+    } catch (error) {
+      throw new HTTPException(400, {
+        res: c.json({ error: "User not created" }, 400),
+      });
     }
-  )
+
+    // return user
+    return c.json({ message: "User created" });
+  })
   .post(
     "/api/users/login",
-    zValidator("json", scehma.requestUserByUsernameAndPasswordSchema),
+    zValidator(
+      "json",
+      z.object({ username: z.string(), password: z.string() })
+    ),
     async (c) => {
       const { username, password } = c.req.valid("json");
 
@@ -311,15 +323,140 @@ export const app = new Hono()
       return c.json({ message: "Facility deleted" });
     }
   )
+  // get Resource Availability
+  .get("/api/resourceAvailability", async (c) => {
+    const resourceAvailability = await db
+      .select()
+      .from(ResourceAvailability)
+      .innerJoin(Resources, eq(ResourceAvailability.resourceId, Resources.id));
+    return c.json(resourceAvailability);
+  })
+  // get Resource Availability by id
+  .get(
+    "/api/resourceAvailability/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const resourceAvailability = await db
+        .select()
+        .from(ResourceAvailability)
+        .where(eq(ResourceAvailability.id, Number(id)));
+      return c.json(resourceAvailability);
+    }
+  )
+  .get(
+    "/api/resourceAvailability/:resourceId/:date",
+    zValidator("param", z.object({ resourceId: z.string(), date: z.string() })),
+    async (c) => {
+      const { resourceId, date } = c.req.valid("param");
+
+      const selectedDate = new Date(date).getTime();
+
+      console.log(selectedDate);
+
+      const availability = await db
+        .select()
+        .from(ResourceAvailability)
+        .where(
+          and(
+            eq(ResourceAvailability.resourceId, parseInt(resourceId)),
+            lte(ResourceAvailability.startDate, selectedDate),
+            gte(ResourceAvailability.endDate, selectedDate)
+          )
+        );
+
+      console.log(availability);
+
+      // Process availability to return time slots
+      // This is a simplified example and may need to be adjusted based on your specific requirements
+      return c.json(
+        availability.map((slot) => ({
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        }))
+      );
+    }
+  )
+  // create resource availability
+  .post(
+    "/api/resourceAvailability",
+    zValidator("json", FormResourceAvailabilitySchema),
+    async (c) => {
+      const resourceAvailability = c.req.valid("json");
+
+      const dbResourceAvailability =
+        convertFormResourceAvailabilityToDBResourceAvailability(
+          resourceAvailability
+        );
+
+      console.log(dbResourceAvailability);
+
+      try {
+        await db.insert(ResourceAvailability).values(dbResourceAvailability);
+      } catch (error) {
+        console.error("Error creating resource availability:", error);
+        throw new HTTPException(400, {
+          res: c.json(
+            {
+              error: "Resource availability not created",
+              details: error instanceof Error ? error.message : "Unknown error",
+            },
+            400
+          ),
+        });
+      }
+
+      return c.json({ message: "Resource availability created" });
+    }
+  )
+  // update resource availability
+  .patch(
+    "/api/resourceAvailability/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("json", FormResourceAvailabilitySchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const resourceAvailability = c.req.valid("json");
+
+      const dbResourceAvailability =
+        convertFormResourceAvailabilityToDBResourceAvailability(
+          resourceAvailability
+        );
+
+      await db
+        .update(ResourceAvailability)
+        .set(dbResourceAvailability)
+        .where(eq(ResourceAvailability.id, Number(id)));
+      return c.json({ message: "Resource availability updated" });
+    }
+  )
+  // delete resource availability
+  .delete(
+    "/api/resourceAvailability/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      await db
+        .delete(ResourceAvailability)
+        .where(eq(ResourceAvailability.id, Number(id)));
+      return c.json({ message: "Resource availability deleted" });
+    }
+  )
   // get appointments
   .get("/api/appointments", async (c) => {
-    const appointments = await db.select().from(Appointments);
+    const appointments = await db
+      .select()
+      .from(Appointments)
+      .leftJoin(Patients, eq(Appointments.patientId, Patients.id))
+      .leftJoin(AppointmentTypes, eq(Appointments.typeId, AppointmentTypes.id))
+      .leftJoin(Resources, eq(Appointments.resourceId, Resources.id))
+      .leftJoin(Facilities, eq(Appointments.facilityId, Facilities.id));
     return c.json(appointments);
   })
   // get appointment by id
   .get(
     "/api/appointments/:id",
-    zValidator("param", scehma.requestAppointmentByIdSchema),
+    zValidator("param", z.object({ id: z.string() })),
     async (c) => {
       // get resource by id
       const { id } = c.req.valid("param");
@@ -334,14 +471,28 @@ export const app = new Hono()
   // create appointment
   .post(
     "/api/appointments",
-    zValidator("json", scehma.insertAppointmentSchema),
+    zValidator("json", FormAppointmentSchema),
     async (c) => {
       // create resource
       const appointment = c.req.valid("json");
 
+      const dbAppointment = convertFormAppointmentToDBAppointment(appointment);
+
+      const patient = await db
+        .select()
+        .from(Patients)
+        .where(eq(Patients.id, dbAppointment.patientId))
+        .limit(1);
+
+      if (patient.length === 0) {
+        throw new HTTPException(404, {
+          res: c.json({ error: "Patient not found" }, 404),
+        });
+      }
+
       try {
         // insert resource into db
-        await db.insert(Appointments).values(appointment);
+        await db.insert(Appointments).values(dbAppointment);
       } catch (error) {
         throw new HTTPException(400, {
           res: c.json({ error: "Appointment not created" }, 400),
@@ -355,13 +506,16 @@ export const app = new Hono()
   .patch(
     "/api/appointments/:id",
     zValidator("param", z.object({ id: z.string() })),
-    zValidator("json", scehma.insertAppointmentSchema),
+    zValidator("json", FormAppointmentSchema),
     async (c) => {
       const { id } = c.req.valid("param");
       const appointment = c.req.valid("json");
+
+      const dbAppointment = convertFormAppointmentToDBAppointment(appointment);
+
       await db
         .update(Appointments)
-        .set(appointment)
+        .set(dbAppointment)
         .where(eq(Appointments.id, Number(id)));
       return c.json({ message: "Appointment updated" });
     }
@@ -374,6 +528,84 @@ export const app = new Hono()
       const { id } = c.req.valid("param");
       await db.delete(Appointments).where(eq(Appointments.id, Number(id)));
       return c.json({ message: "Appointment deleted" });
+    }
+  )
+  // get appointment types
+  .get("/api/appointmentTypes", async (c) => {
+    const appointmentTypes = await db.select().from(AppointmentTypes);
+    return c.json(appointmentTypes);
+  })
+  // get patients
+  .get("/api/patients", async (c) => {
+    const patients = await db.select().from(Patients);
+    return c.json(patients);
+  })
+  // get patient by id
+  .get(
+    "/api/patients/:id",
+    zValidator("param", scehma.requestPatientByIdSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const patient = await db
+        .select()
+        .from(Patients)
+        .where(eq(Patients.id, Number(id)))
+        .limit(1);
+      return c.json(patient);
+    }
+  )
+  // get patient by medical record number
+  .get(
+    "/api/patients/mrn/:mrn",
+    zValidator("param", z.object({ mrn: z.string() })),
+    async (c) => {
+      const { mrn } = c.req.valid("param");
+      const patient = await db
+        .select()
+        .from(Patients)
+        .where(eq(Patients.medicalRecordNumber, mrn))
+        .limit(1);
+      return c.json(patient);
+    }
+  )
+  // create patient
+  .post(
+    "/api/patients",
+    zValidator("json", scehma.insertPatientSchema),
+    async (c) => {
+      const patient = c.req.valid("json");
+      await db.insert(Patients).values(patient);
+      return c.json({ message: "Patient created" });
+    }
+  )
+  // update patient
+  .patch(
+    "/api/patients/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("json", scehma.insertPatientSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const patient = c.req.valid("json");
+      await db
+        .update(Patients)
+        .set(patient)
+        .where(eq(Patients.id, Number(id)));
+      return c.json({ message: "Patient updated" });
+    }
+  )
+  // block patient
+  .patch(
+    "/api/patients/:id/block",
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("json", z.object({ blocked: z.boolean() })),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const status = c.req.valid("json");
+      await db
+        .update(Patients)
+        .set({ blocked: status.blocked })
+        .where(eq(Patients.id, Number(id)));
+      return c.json({ message: "Patient blocked" });
     }
   );
 

@@ -10,6 +10,7 @@ import Resources from "./pages/resources";
 import ProtectedLayout from "./protected-layout";
 import Facilities from "./pages/facilities";
 import ResourceConfigurations from "./pages/resource-configs";
+import ResourceAvailability from "./pages/resource-availability";
 import Appointments from "./pages/appointments";
 function App() {
   return (
@@ -26,6 +27,10 @@ function App() {
         <Route
           path="/resource-configurations"
           element={<ResourceConfigurations />}
+        />
+        <Route
+          path="/resource-availability"
+          element={<ResourceAvailability />}
         />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/calendar" element={<Calendar />} />

@@ -16,7 +16,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
 import ResourceConfigurationDialog from "@/components/models/resource-config-dialog";
-
+import { formatLocalDateTime } from "@/lib/datetime-format";
 import { insertResourceConfigurationSchema } from "@server/types";
 
 import { z } from "zod";
@@ -81,8 +81,12 @@ function ResourceConfigurations() {
               </TableCell>
               <TableCell>{resource.ResourceConfigurations.startTime}</TableCell>
               <TableCell>{resource.ResourceConfigurations.endTime}</TableCell>
-              <TableCell>{resource.ResourceConfigurations.startDate}</TableCell>
-              <TableCell>{resource.ResourceConfigurations.endDate}</TableCell>
+              <TableCell>
+                {formatLocalDateTime(resource.ResourceConfigurations.startDate)}
+              </TableCell>
+              <TableCell>
+                {formatLocalDateTime(resource.ResourceConfigurations.endDate)}
+              </TableCell>
               <TableCell>{resource.ResourceConfigurations.weekDays}</TableCell>
               <TableCell>{resource.ResourceConfigurations.statusId}</TableCell>
               <TableCell>

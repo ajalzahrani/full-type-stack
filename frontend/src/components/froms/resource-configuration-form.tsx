@@ -18,28 +18,15 @@ import { SelectItem } from "@/components/ui/select";
 import { SelectGroup } from "@/components/ui/select";
 import { ResourceConfigurationStatus, WeekDays } from "@/constants";
 import { Button } from "../ui/button";
+import {
+  ResourceConfigurationFormValues,
+  convertFormValuesToAPI,
+} from "@/types/forms/resource-config-type";
 
 interface ResourceConfigurationFormProps {
   defaultValues?: z.infer<typeof insertResourceConfigurationSchema>;
   onSuccess: () => void;
 }
-
-type FormValues = Omit<
-  z.infer<typeof insertResourceConfigurationSchema>,
-  | "resourceId"
-  | "facilityId"
-  | "statusId"
-  | "estimatedWaitingTime"
-  | "startDate"
-  | "endDate"
-> & {
-  resourceId: string | number;
-  facilityId: string | number;
-  statusId: string | number;
-  estimatedWaitingTime: string | number;
-  startDate: string | null;
-  endDate: string | null;
-};
 
 function ResourceConfigurationForm({
   defaultValues,
@@ -92,7 +79,7 @@ function ResourceConfigurationForm({
     },
   });
 
-  const form = useForm<FormValues>({
+  const form = useForm<ResourceConfigurationFormValues>({
     resolver: zodResolver(insertResourceConfigurationSchema),
     defaultValues: defaultValues
       ? {
@@ -111,16 +98,8 @@ function ResourceConfigurationForm({
       : undefined,
   });
 
-  const onSubmit = (values: FormValues) => {
-    const processedValues = {
-      ...values,
-      resourceId: Number(values.resourceId),
-      facilityId: Number(values.facilityId),
-      statusId: Number(values.statusId),
-      estimatedWaitingTime: Number(values.estimatedWaitingTime),
-      startDate: values.startDate ? new Date(values.startDate) : null,
-      endDate: values.endDate ? new Date(values.endDate) : null,
-    };
+  const onSubmit = (values: ResourceConfigurationFormValues) => {
+    const processedValues = convertFormValuesToAPI(values);
 
     if (defaultValues?.id) {
       updateMutate({ ...processedValues, id: defaultValues.id });
@@ -264,10 +243,6 @@ function ResourceConfigurationForm({
         <SubmitButton isLoading={isPending || isUpdating}>
           {defaultValues?.id ? "Update" : "Add"}
         </SubmitButton>
-
-        <Button type="button" variant="outline" onClick={() => form.reset()}>
-          Reset
-        </Button>
 
         <Button
           type="button"

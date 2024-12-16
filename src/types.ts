@@ -82,21 +82,63 @@ export const selectResourceConfigurationSchema = createSelectSchema(
 export const requestResourceConfigurationByIdSchema =
   selectResourceConfigurationSchema.pick({ id: true });
 
+// RESOURCE AVAILABILITY TABLE
+export const insertResourceAvailabilitySchema = createInsertSchema(
+  schema.ResourceAvailability
+).extend({
+  resourceId: z.union([z.string(), z.number()]).transform((val) => Number(val)),
+  startDate: z
+    .union([z.string(), z.date()])
+    .transform((val) => (typeof val === "string" ? new Date(val) : val)),
+  endDate: z
+    .union([z.string(), z.date()])
+    .transform((val) => (typeof val === "string" ? new Date(val) : val))
+    .nullable(),
+});
+export const selectResourceAvailabilitySchema = createSelectSchema(
+  schema.ResourceAvailability
+);
+export const requestResourceAvailabilityByIdSchema =
+  selectResourceAvailabilitySchema.pick({ id: true });
+
 // APPOINTMENTS TABLE
 export const insertAppointmentSchema = createInsertSchema(schema.Appointments);
-export const selectAppointmentSchema = createSelectSchema(schema.Appointments);
+// .extend({
+//   resourceConfigId: z
+//     .union([z.string(), z.number()])
+//     .transform((val) => Number(val)),
+//   patientId: z.number().optional(),
+//   mrn: z.string().min(10).max(10),
+//   appointmentDate: z.date(),
+//   appointmentTime: z.string(),
+//   // appointmentTime: z
+//   //   .union([z.string(), z.date()])
+//   //   .transform((val) => (typeof val === "string" ? new Date(val) : val)),
+// });
+export const selectAppointmentSchema = createSelectSchema(
+  schema.Appointments
+).extend({
+  mrn: z.string().min(10).max(10),
+});
 export const requestAppointmentByIdSchema = selectAppointmentSchema.pick({
   id: true,
 });
-export const requestAppointmentByPatientIdSchema = selectAppointmentSchema.pick(
-  {
-    patientId: true,
-  }
-);
+export const requestAppointmentByPatientMrnSchema =
+  selectAppointmentSchema.pick({
+    mrn: true,
+  });
 export const requestAppointmentByResourceConfigIdSchema =
   selectAppointmentSchema.pick({
-    resourceConfigId: true,
+    resourceId: true,
   });
 export const requestAppointmentByResourceIdSchema = z.object({
   resourceId: z.number().int().positive(),
+});
+
+// PATIENTS TABLE
+export const insertPatientSchema = createInsertSchema(schema.Patients);
+export const selectPatientSchema = createSelectSchema(schema.Patients);
+export const requestPatientByIdSchema = selectPatientSchema.pick({ id: true });
+export const requestPatientByMrnSchema = selectPatientSchema.pick({
+  medicalRecordNumber: true,
 });

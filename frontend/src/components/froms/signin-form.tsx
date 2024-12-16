@@ -8,7 +8,11 @@ import CustomFormField, { FormFieldType } from "./form";
 import SubmitButton from "../submit-button";
 
 import { Form } from "../ui/form";
-import { requestUserByUsernameAndPasswordSchema } from "@server/types";
+import {
+  FormUserSchema,
+  FormUserType,
+  requestUserByUsernameAndPasswordSchema,
+} from "@server/types/user-types";
 import { loginUser } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -19,8 +23,10 @@ function SingupForm() {
     mutationFn: loginUser,
   });
 
-  const form = useForm<z.infer<typeof requestUserByUsernameAndPasswordSchema>>({
-    resolver: zodResolver(requestUserByUsernameAndPasswordSchema),
+  const form = useForm<FormUserType>({
+    resolver: zodResolver(
+      FormUserSchema.pick({ username: true, password: true })
+    ),
     defaultValues: {
       username: "",
       password: "",

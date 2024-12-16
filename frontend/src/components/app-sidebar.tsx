@@ -41,6 +41,11 @@ const items = [
     icon: Settings,
   },
   {
+    title: "Resource Availability",
+    url: "/resource-availability",
+    icon: Calendar,
+  },
+  {
     title: "Appointments",
     url: "/appointments",
     icon: Calendar,

@@ -2,7 +2,6 @@ import AppointmentTable from "@/components/tables/appointment-table";
 import { Button } from "@/components/ui/button";
 import AppointmentDialog from "@/components/models/appointment-dialog";
 import { useState } from "react";
-
 function Appointments() {
   const [open, setOpen] = useState(false);
 

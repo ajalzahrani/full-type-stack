@@ -5,12 +5,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import AppointmentForm from "@/components/froms/appointment-form";
-import { insertAppointmentSchema } from "@server/types";
-import { z } from "zod";
+import { FormAppointmentType } from "@server/types/appointment-types";
 interface AppointmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultValues?: z.infer<typeof insertAppointmentSchema>;
+  defaultValues?: FormAppointmentType;
 }
 
 function AppointmentDialog({
