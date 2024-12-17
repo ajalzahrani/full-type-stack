@@ -148,8 +148,9 @@ export async function getAppointmentById(id: number) {
 export async function createAppointment(appointment: FormAppointmentType) {
   const res = await client.api.appointments.$post({ json: appointment });
 
+  const resJson = await res.json();
   if (!res.ok) {
-    throw new Error(res.statusText);
+    throw new Error(resJson.message);
   }
 
   return res.json();

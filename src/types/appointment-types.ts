@@ -6,13 +6,16 @@ const DBAppointmentSchema = createInsertSchema(schema.Appointments);
 const FormAppointmentSchema = z.object({
   id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
   resourceId: z.string().regex(/^\d+$/, "Resource ID must be a numeric string"),
-  patientId: z.string().regex(/^\d+$/, "Patient ID must be a numeric string"),
-  facilityId: z.string().regex(/^\d+$/, "Facility ID must be a numeric string"),
+  patientMrn: z.string().regex(/^\d+$/, "Patient ID must be a numeric string"),
+  facilityId: z
+    .string()
+    .regex(/^\d+$/, "Facility ID must be a numeric string")
+    .optional(),
   typeId: z.string().regex(/^\d+$/, "Type ID must be a numeric string"),
   appointmentDate: z.string(),
   startTime: z.string(),
   endTime: z.string(),
-  status: z.string(),
+  status: z.string().default("scheduled"),
   notes: z.string().optional(),
 });
 
@@ -34,8 +37,7 @@ export const convertFormAppointmentToDBAppointment = (
     appointmentDate: new Date(formAppointment.appointmentDate).getTime(),
     id: formAppointment.id ? parseInt(formAppointment.id) : undefined,
     resourceId: parseInt(formAppointment.resourceId),
-    patientId: parseInt(formAppointment.patientId),
-    facilityId: parseInt(formAppointment.facilityId),
+    patientMrn: formAppointment.patientMrn,
     typeId: parseInt(formAppointment.typeId),
     startTime: combineDateAndTime(
       formAppointment.startTime,

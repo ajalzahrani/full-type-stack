@@ -13,6 +13,13 @@ const FormResourceAvailabilitySchema = z.object({
   endTime: z.string(),
   startDate: z.string(),
   endDate: z.string().nullable(),
+  facilityId: z.string().regex(/^\d+$/, "Facility ID must be a numeric string"),
+  consultationDuration: z
+    .string()
+    .regex(/^\d+$/, "Consultation Duration must be a numeric string"),
+  followupDuration: z
+    .string()
+    .regex(/^\d+$/, "Followup Duration must be a numeric string"),
   weekDays: z.string(),
   isRecurring: z.boolean().optional(),
 });
@@ -56,6 +63,11 @@ export const convertFormResourceAvailabilityToDBResourceAvailability = (
       ? new Date(formResourceAvailability.endDate).getTime()
       : null,
     weekDays: formResourceAvailability.weekDays,
+    facilityId: parseInt(formResourceAvailability.facilityId),
+    consultationDuration: parseInt(
+      formResourceAvailability.consultationDuration
+    ),
+    followupDuration: parseInt(formResourceAvailability.followupDuration),
     isRecurring: formResourceAvailability.isRecurring ?? true,
     createdAt: now.toString(),
     updatedAt: now.toString(),

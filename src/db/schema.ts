@@ -130,7 +130,7 @@ export const Patients = sqliteTable("Patients", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   firstName: text("firstName").notNull(),
   lastName: text("lastName").notNull(),
-  dateOfBirth: timestamp().notNull(),
+  dateOfBirth: integer("dateOfBirth").notNull(),
   gender: text("gender"),
   email: text("email"),
   phone: text("phone"),
@@ -154,6 +154,9 @@ export const ResourceAvailability = sqliteTable("ResourceAvailability", {
   startDate: integer("startDate").notNull(), // e.g., 2024-01-01
   endDate: integer("endDate"), // e.g., 2024-01-01
   weekDays: text("weekDays").notNull(), // e.g., 'Mon,Tue,Wed'
+  facilityId: integer("facilityId").references(() => Facilities.id),
+  consultationDuration: integer("consultationDuration").notNull(), // e.g., 30 minutes
+  followupDuration: integer("followupDuration").notNull(), // e.g., 15 minutes
   isRecurring: integer("isRecurring", { mode: "boolean" })
     .notNull()
     .default(true),
@@ -165,6 +168,10 @@ export const resourceAvailabilityRelations = relations(
     resource: one(Resources, {
       fields: [ResourceAvailability.resourceId],
       references: [Resources.id],
+    }),
+    facility: one(Facilities, {
+      fields: [ResourceAvailability.facilityId],
+      references: [Facilities.id],
     }),
   })
 );
@@ -189,10 +196,9 @@ export const Appointments = sqliteTable("Appointments", {
   resourceId: integer("resourceId")
     .notNull()
     .references(() => Resources.id),
-  patientId: integer("patientId")
+  patientMrn: text("patientMrn")
     .notNull()
-    .references(() => Patients.id),
-  facilityId: integer("facilityId").references(() => Facilities.id),
+    .references(() => Patients.medicalRecordNumber),
   typeId: integer("typeId")
     .notNull()
     .references(() => AppointmentTypes.id),
@@ -209,12 +215,8 @@ export const appointmentRelations = relations(Appointments, ({ one }) => ({
     references: [Resources.id],
   }),
   patient: one(Patients, {
-    fields: [Appointments.patientId],
-    references: [Patients.id],
-  }),
-  facility: one(Facilities, {
-    fields: [Appointments.facilityId],
-    references: [Facilities.id],
+    fields: [Appointments.patientMrn],
+    references: [Patients.medicalRecordNumber],
   }),
   type: one(AppointmentTypes, {
     fields: [Appointments.typeId],

@@ -153,6 +153,7 @@ export const app = new Hono()
         // insert resource into db
         await db.insert(Resources).values(resource);
       } catch (error) {
+        console.error("Error creating resource:", error);
         throw new HTTPException(400, {
           res: c.json({ error: "Resource not created" }, 400),
         });
@@ -349,10 +350,7 @@ export const app = new Hono()
     zValidator("param", z.object({ resourceId: z.string(), date: z.string() })),
     async (c) => {
       const { resourceId, date } = c.req.valid("param");
-
       const selectedDate = new Date(date).getTime();
-
-      console.log(selectedDate);
 
       const availability = await db
         .select()
@@ -365,16 +363,43 @@ export const app = new Hono()
           )
         );
 
-      console.log(availability);
+      if (!availability.length) {
+        return c.json([]);
+      }
 
-      // Process availability to return time slots
-      // This is a simplified example and may need to be adjusted based on your specific requirements
-      return c.json(
-        availability.map((slot) => ({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        }))
-      );
+      // Generate time slots based on consultation duration
+      const timeSlots = [];
+      for (const slot of availability) {
+        const startTime = new Date(slot.startTime);
+        const endTime = new Date(slot.endTime);
+        const duration = slot.consultationDuration; // Duration in minutes
+
+        let currentSlotStart = startTime;
+        while (currentSlotStart < endTime) {
+          const currentSlotEnd = new Date(
+            currentSlotStart.getTime() + duration * 60000
+          );
+
+          // Only add the slot if it fits within the availability window
+          if (currentSlotEnd <= endTime) {
+            timeSlots.push({
+              startTime: currentSlotStart.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }),
+              endTime: currentSlotEnd.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }),
+            });
+          }
+          currentSlotStart = currentSlotEnd;
+        }
+      }
+
+      return c.json(timeSlots);
     }
   )
   // create resource availability
@@ -447,10 +472,12 @@ export const app = new Hono()
     const appointments = await db
       .select()
       .from(Appointments)
-      .leftJoin(Patients, eq(Appointments.patientId, Patients.id))
+      .leftJoin(
+        Patients,
+        eq(Appointments.patientMrn, Patients.medicalRecordNumber)
+      )
       .leftJoin(AppointmentTypes, eq(Appointments.typeId, AppointmentTypes.id))
-      .leftJoin(Resources, eq(Appointments.resourceId, Resources.id))
-      .leftJoin(Facilities, eq(Appointments.facilityId, Facilities.id));
+      .leftJoin(Resources, eq(Appointments.resourceId, Resources.id));
     return c.json(appointments);
   })
   // get appointment by id
@@ -481,7 +508,7 @@ export const app = new Hono()
       const patient = await db
         .select()
         .from(Patients)
-        .where(eq(Patients.id, dbAppointment.patientId))
+        .where(eq(Patients.medicalRecordNumber, appointment.patientMrn))
         .limit(1);
 
       if (patient.length === 0) {
@@ -494,6 +521,7 @@ export const app = new Hono()
         // insert resource into db
         await db.insert(Appointments).values(dbAppointment);
       } catch (error) {
+        console.error("Error creating appointment:", error);
         throw new HTTPException(400, {
           res: c.json({ error: "Appointment not created" }, 400),
         });

@@ -6,6 +6,7 @@ import SubmitButton from "../submit-button";
 import { Form } from "../ui/form";
 import {
   createResourceAvailability,
+  getFacilities,
   getResources,
   updateResourceAvailability,
 } from "@/lib/api";
@@ -39,10 +40,15 @@ function ResourceAvailabilityForm({
     queryFn: () => getResources(),
   });
 
+  const { data: facilities } = useQuery({
+    queryKey: ["facilities"],
+    queryFn: getFacilities,
+  });
+
   const { mutate: createMutate, isPending } = useMutation({
     mutationFn: createResourceAvailability,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resourceAvailability"] });
+      queryClient.invalidateQueries({ queryKey: ["resource-availabilities"] });
       toast({
         title: "Resource availability created successfully",
         variant: "default",
@@ -61,7 +67,7 @@ function ResourceAvailabilityForm({
   const { mutate: updateMutate, isPending: isUpdating } = useMutation({
     mutationFn: updateResourceAvailability,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resourceAvailability"] });
+      queryClient.invalidateQueries({ queryKey: ["resource-availabilities"] });
       toast({ title: "Resource availability updated" });
       onSuccess();
     },
@@ -111,6 +117,22 @@ function ResourceAvailabilityForm({
               ))}
             </SelectGroup>
           </CustomFormField>
+
+          <CustomFormField
+            fieldType={FormFieldType.SELECT}
+            control={form.control}
+            name="facilityId"
+            label="Facility"
+            placeholder="Select a facility"
+            description="Select the facility for the appointment">
+            <SelectGroup>
+              {facilities?.map((facility) => (
+                <SelectItem key={facility.id} value={facility.id.toString()}>
+                  {facility.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </CustomFormField>
         </div>
 
         <div className="flex flex-col gap-6 xl:flex-row">
@@ -153,56 +175,61 @@ function ResourceAvailabilityForm({
           />
         </div>
 
-        {/* <div className="flex flex-col gap-6 xl:flex-row">
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <MultiSelect
+            options={WeekDayOptions}
+            selected={
+              form.getValues("weekDays")
+                ? form.getValues("weekDays").split(",")
+                : []
+            }
+            onChange={(selected) =>
+              form.setValue("weekDays", selected.join(","))
+            }
+            placeholder="Select Week Days"
+          />
           <CustomFormField
-            fieldType={FormFieldType.SELECT}
-            label="Week Days"
-            placeholder="Week Days"
-            description="Week Days"
+            fieldType={FormFieldType.CHECKBOX}
+            label="Is Recurring"
+            placeholder="Is Recurring"
+            description="Is Recurring"
             control={form.control}
-            name="weekDays">
-            <SelectGroup>
-              <MultiSelect
-                options={WeekDayOptions}
-                selected={form.getValues("weekDays").split(",") || []}
-                onChange={(selected) =>
-                  form.setValue("weekDays", selected.join(","))
-                }
-              />
-            </SelectGroup>
-          </CustomFormField>
-        </div> */}
+            name="isRecurring"
+          />
+        </div>
 
-        <MultiSelect
-          options={WeekDayOptions}
-          selected={
-            form.getValues("weekDays")
-              ? form.getValues("weekDays").split(",")
-              : []
-          }
-          onChange={(selected) => form.setValue("weekDays", selected.join(","))}
-          placeholder="Select Week Days"
-        />
+        <div className="flex flex-col gap-6 xl:flex-row">
+          <CustomFormField
+            fieldType={FormFieldType.NUMBER}
+            label="Consultation Duration"
+            placeholder="Consultation Duration"
+            description="Consultation Duration"
+            control={form.control}
+            name="consultationDuration"
+            step={5}
+          />
 
-        <CustomFormField
-          fieldType={FormFieldType.CHECKBOX}
-          label="Is Recurring"
-          placeholder="Is Recurring"
-          description="Is Recurring"
-          control={form.control}
-          name="isRecurring"
-        />
+          <CustomFormField
+            fieldType={FormFieldType.NUMBER}
+            label="Followup Duration"
+            placeholder="Followup Duration"
+            description="Followup Duration"
+            control={form.control}
+            name="followupDuration"
+            step={5}
+          />
+        </div>
 
         <SubmitButton isLoading={isPending || isUpdating}>
           {defaultValues?.id ? "Update" : "Add"}
         </SubmitButton>
 
-        <Button
+        {/* <Button
           type="button"
           variant="outline"
           onClick={() => console.log(form.getValues())}>
           Console
-        </Button>
+        </Button> */}
       </form>
     </Form>
   );

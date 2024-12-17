@@ -67,3 +67,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+.time-slot-calendar {
+  @apply bg-background border border-input rounded-md shadow-md p-2;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-primary text-primary-foreground !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  @apply bg-accent text-accent-foreground !important;
+}
+
+.react-datepicker__day:hover {
+  @apply bg-accent text-accent-foreground !important;
+}

@@ -20,7 +20,9 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-import { MultiSelect } from "../ui/multi-select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import "react-datepicker/dist/react-datepicker.css";
+import { format, parse } from "date-fns";
 
 export enum FormFieldType {
   INPUT = "input",
@@ -33,6 +35,7 @@ export enum FormFieldType {
   SELECT = "select",
   MULTI_SELECT = "multiSelect",
   SKELETON = "skeleton",
+  NUMBER = "number",
 }
 
 interface CustomProps {
@@ -49,7 +52,8 @@ interface CustomProps {
   children?: React.ReactNode;
   renderSkeleton?: (field: any) => React.ReactNode;
   fieldType: FormFieldType;
-  // onDateChange?: (date: Date) => void;
+  step?: number;
+  onChange?: (date: Date) => void;
 }
 
 const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
@@ -141,25 +145,64 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
       );
     case FormFieldType.DATE_PICKER_CUSTOM:
       return (
-        <div className="flex rounded-md border border-dark-500 bg-dark-400">
-          <img
-            src="/assets/icons/calendar.svg"
-            height={24}
-            width={24}
-            alt="user"
-            className="ml-2"
-          />
+        <div className="flex rounded-md border border-input bg-transparent">
           <FormControl>
             <ReactDatePicker
-              showTimeSelect={props.showTimeSelect ?? false}
-              selected={field.value}
-              onChange={(date: Date) => field.onChange(date)}
-              timeInputLabel="Time:"
-              dateFormat={props.dateFormat ?? "MM/dd/yyyy"}
-              wrapperClassName="date-picker"
+              selected={field.value ? new Date(field.value) : null}
+              onChange={(date: Date | null) => {
+                field.onChange(date?.toISOString());
+                // Clear any selected time slot when date changes
+                // form.setValue("startTime", "");
+                // form.setValue("endTime", "");
+              }}
+              dateFormat="MMMM d, yyyy"
+              placeholderText={props.placeholder}
+              className="flex w-full rounded-md border-0 bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              calendarClassName="time-slot-calendar"
+              inline={false}
+              renderCustomHeader={({
+                date,
+                decreaseMonth,
+                increaseMonth,
+                prevMonthButtonDisabled,
+                nextMonthButtonDisabled,
+              }) => (
+                <div className="flex items-center justify-between px-2 py-2">
+                  <button
+                    onClick={decreaseMonth}
+                    disabled={prevMonthButtonDisabled}
+                    type="button"
+                    className="p-1 hover:bg-accent rounded-sm">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <div className="text-sm font-medium">
+                    {format(date, "MMMM yyyy")}
+                  </div>
+                  <button
+                    onClick={increaseMonth}
+                    disabled={nextMonthButtonDisabled}
+                    type="button"
+                    className="p-1 hover:bg-accent rounded-sm">
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
             />
           </FormControl>
         </div>
+      );
+    case FormFieldType.NUMBER:
+      return (
+        <FormControl>
+          <Input
+            value={field.value}
+            placeholder={props.placeholder}
+            type="number"
+            onChange={field.onChange}
+            className="time-picker"
+            step={props.step}
+          />
+        </FormControl>
       );
     case FormFieldType.SELECT:
       return (

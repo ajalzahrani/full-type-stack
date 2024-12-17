@@ -118,6 +118,13 @@ function ResourceAvailabilityTable() {
                       ),
                       weekDays: resource.ResourceAvailability.weekDays || "",
                       isRecurring: resource.ResourceAvailability.isRecurring,
+                      consultationDuration:
+                        resource.ResourceAvailability.consultationDuration.toString(),
+                      followupDuration:
+                        resource.ResourceAvailability.followupDuration.toString(),
+                      facilityId: resource.ResourceAvailability.facilityId
+                        ? resource.ResourceAvailability.facilityId.toString()
+                        : "",
                     });
                     setDialogOpen(true);
                   }}>
