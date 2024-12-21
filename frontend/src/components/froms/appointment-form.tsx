@@ -16,6 +16,7 @@ import {
   getResources,
   getAppointmentTypes,
   getResourceAvailabilityByResourceIdAndDate,
+  getResourcesWithAppointments,
 } from "@/lib/api";
 import {
   FormAppointmentType,
@@ -33,7 +34,14 @@ function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
   const [selectedTimeSlot, setSelectedTimeSlot] = React.useState<{
     startTime: string;
     endTime: string;
-  } | null>(null);
+  } | null>(
+    defaultValues?.startTime && defaultValues?.endTime
+      ? {
+          startTime: defaultValues.startTime,
+          endTime: defaultValues.endTime,
+        }
+      : null
+  );
 
   const { data: resources } = useQuery({
     queryKey: ["resources"],
@@ -133,8 +141,10 @@ function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
           description="Select a doctor, nurse, or room">
           <SelectGroup>
             {resources?.map((resource) => (
-              <SelectItem key={resource.id} value={resource.id.toString()}>
-                {resource.name}
+              <SelectItem
+                key={resource.Resources.id}
+                value={resource.Resources.id.toString()}>
+                {resource.Resources.name}
               </SelectItem>
             ))}
           </SelectGroup>
@@ -166,52 +176,10 @@ function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
           </CustomFormField>
         </div>
 
-        {/* <CustomFormField
-          fieldType={FormFieldType.DATE_PICKER}
-          label="Appointment Date"
-          placeholder="Select appointment date"
-          description="Choose the date for the appointment"
-          control={form.control}
-          name="appointmentDate"
-        /> */}
-
-        {/* <TimeSlotPicker
-          availableSlots={Array.from({ length: 5 }, (_, i) => ({
-            startTime: `${i}:00`,
-            endTime: `${i + 1}:00`,
-          }))}
-          selectedSlot={selectedTimeSlot}
-          onSelectSlot={(slot) => {
-            setSelectedTimeSlot(slot);
-            form.setValue("startTime", slot.startTime);
-            form.setValue("endTime", slot.endTime);
-          }}
-        /> */}
-
-        {/* {form.watch("appointmentDate") &&
-          form.watch("resourceId") &&
-          availableSlots && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Available Time Slots</h3>
-              <TimeSlotPicker
-                availableSlots={availableSlots.map((slot) => ({
-                  startTime: slot.startTime,
-                  endTime: slot.endTime,
-                }))}
-                selectedSlot={selectedTimeSlot}
-                onSelectSlot={(slot) => {
-                  setSelectedTimeSlot(slot);
-                  form.setValue("startTime", slot.startTime);
-                  form.setValue("endTime", slot.endTime);
-                }}
-              />
-            </div>
-          )} */}
-
         <CustomFormField
           fieldType={FormFieldType.DATE_PICKER_CUSTOM}
           label="Appointment Date & Time"
-          placeholder="Select appointment date and time"
+          placeholder="Appointment date"
           description="Choose the date and time for the appointment"
           control={form.control}
           name="appointmentDate"
@@ -226,6 +194,7 @@ function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
               <div className="grid grid-cols-4 gap-2">
                 {availableSlots.map((slot) => (
                   <Button
+                    type="button"
                     key={`${slot.startTime}-${slot.endTime}`}
                     variant={
                       selectedTimeSlot?.startTime === slot.startTime

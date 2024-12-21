@@ -6,12 +6,13 @@ import Dashboard from "./pages/dashboard";
 import Calendar from "./pages/calendar";
 import Search from "./pages/search";
 import Settings from "./pages/settings";
-import Resources from "./pages/appointment-managment/resources";
+import Resources from "./pages/resource-managment/resources";
 import ProtectedLayout from "./protected-layout";
-import Facilities from "./pages/appointment-managment/facilities";
+import Facilities from "./pages/resource-managment/facilities";
 import ResourceAvailability from "./pages/appointment-managment/resource-availability";
 import Appointments from "./pages/appointment-managment/appointments";
 import PatientRegistration from "./pages/patient-managment/patient-registration";
+import AppointmentTypes from "./pages/appointment-managment/appointment-types";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/appointments" element={<Appointments />} />
         <Route path="/patient-registration" element={<PatientRegistration />} />
+        <Route path="/appointment-types" element={<AppointmentTypes />} />
       </Route>
     </Routes>
   );

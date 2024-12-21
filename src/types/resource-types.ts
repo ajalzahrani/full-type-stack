@@ -6,7 +6,7 @@ const DBResourceSchema = createInsertSchema(schema.Resources);
 const FormResourceSchema = z.object({
   id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
   name: z.string(),
-  resourceType: z.string(),
+  resourceTypeId: z.string(),
   description: z.string().optional(),
 });
 
@@ -19,6 +19,7 @@ export const convertFormResourceToDBResource = (
   return {
     ...formResource,
     id: formResource.id ? parseInt(formResource.id) : undefined,
+    resourceTypeId: parseInt(formResource.resourceTypeId),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     deletedAt: null,

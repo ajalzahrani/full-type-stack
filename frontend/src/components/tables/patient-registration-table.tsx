@@ -66,7 +66,7 @@ function PatientRegistrationTable() {
               <TableCell>
                 {formatDateForInput(patient.Patients.dateOfBirth)}
               </TableCell>
-              <TableCell>{patient.Gender.name}</TableCell>
+              <TableCell>{patient.Genders.name}</TableCell>
               <TableCell>
                 <Button
                   variant="outline"

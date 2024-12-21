@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useForm } from "react-hook-form";
@@ -9,18 +7,17 @@ import SubmitButton from "../submit-button";
 
 import { Form } from "../ui/form";
 
-import { insertResourceSchema } from "@server/types";
-import { createResource, updateResource } from "@/lib/api";
-import { useMutation } from "@tanstack/react-query";
+import { createResource, getResourceTypes, updateResource } from "@/lib/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { ResourceTypes } from "@/constants";
 import { SelectItem } from "@/components/ui/select";
 import { SelectGroup } from "@/components/ui/select";
 import {
   FormResourceSchema,
   FormResourceType,
 } from "@server/types/resource-types";
+import { Button } from "../ui/button";
 
 interface ResourceFormProps {
   defaultValues?: FormResourceType;
@@ -29,6 +26,11 @@ interface ResourceFormProps {
 
 function ResourceForm({ defaultValues, onSuccess }: ResourceFormProps) {
   const queryClient = useQueryClient();
+
+  const { data: resourceTypes } = useQuery({
+    queryKey: ["resourceTypes"],
+    queryFn: getResourceTypes,
+  });
 
   const { mutate: createMutate, isPending } = useMutation({
     mutationFn: createResource,
@@ -102,14 +104,16 @@ function ResourceForm({ defaultValues, onSuccess }: ResourceFormProps) {
           <CustomFormField
             fieldType={FormFieldType.SELECT}
             control={form.control}
-            name="resourceType"
+            name="resourceTypeId"
             label="Resource Type"
             placeholder="Resource Type"
             description="Resource Type">
             <SelectGroup>
-              {ResourceTypes.map((resourceType) => (
-                <SelectItem key={resourceType.id} value={resourceType.name}>
-                  {resourceType.name}
+              {resourceTypes?.map((resourceType) => (
+                <SelectItem
+                  key={resourceType.id}
+                  value={resourceType.id.toString()}>
+                  {resourceType.name.toUpperCase()}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -119,6 +123,12 @@ function ResourceForm({ defaultValues, onSuccess }: ResourceFormProps) {
         <SubmitButton isLoading={isPending || isUpdating}>
           {defaultValues?.id ? "Update" : "Add"}
         </SubmitButton>
+
+        <Button
+          variant="destructive"
+          onClick={() => console.log(form.getValues())}>
+          Reset
+        </Button>
       </form>
     </Form>
   );

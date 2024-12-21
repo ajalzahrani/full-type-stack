@@ -6,31 +6,35 @@ import CustomFormField, { FormFieldType } from "./form";
 import SubmitButton from "../submit-button";
 
 import { Form } from "../ui/form";
-import {
-  FormFacilitySchema,
-  FormFacilityType,
-} from "@server/types/facility-types";
-import { createFacility, updateFacility } from "@/lib/api";
+
+import { createAppointmentType, updateAppointmentType } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  FormAppointmentTypeSchema,
+  FormAppointmentTypeType,
+} from "@server/types/appointment-type-types";
 import { Button } from "../ui/button";
 
-interface FacilityFormProps {
-  defaultValues?: FormFacilityType;
+interface AppointmentTypeFormProps {
+  defaultValues?: FormAppointmentTypeType;
   onSuccess: () => void;
 }
 
-function FacilityForm({ defaultValues, onSuccess }: FacilityFormProps) {
+function AppointmentTypeForm({
+  defaultValues,
+  onSuccess,
+}: AppointmentTypeFormProps) {
   const queryClient = useQueryClient();
 
   const { mutate: createMutate, isPending } = useMutation({
-    mutationFn: createFacility,
+    mutationFn: createAppointmentType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["facilities"] });
+      queryClient.invalidateQueries({ queryKey: ["appointmentTypes"] });
 
       toast({
-        title: "Resource created successfully",
+        title: "Appointment Type created successfully",
         variant: "default",
       });
       form.reset();
@@ -45,10 +49,10 @@ function FacilityForm({ defaultValues, onSuccess }: FacilityFormProps) {
   });
 
   const { mutate: updateMutate, isPending: isUpdating } = useMutation({
-    mutationFn: updateFacility,
+    mutationFn: updateAppointmentType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["facilities"] });
-      toast({ title: "Facility updated" });
+      queryClient.invalidateQueries({ queryKey: ["appointmentTypes"] });
+      toast({ title: "Appointment Type updated" });
       onSuccess();
     },
     onError: (error: Error) => {
@@ -59,12 +63,12 @@ function FacilityForm({ defaultValues, onSuccess }: FacilityFormProps) {
     },
   });
 
-  const form = useForm<FormFacilityType>({
-    resolver: zodResolver(FormFacilitySchema),
+  const form = useForm<FormAppointmentTypeType>({
+    resolver: zodResolver(FormAppointmentTypeSchema),
     defaultValues,
   });
 
-  const onSubmit = (values: FormFacilityType) => {
+  const onSubmit = (values: FormAppointmentTypeType) => {
     if (defaultValues?.id) {
       updateMutate({ ...values, id: defaultValues.id });
     } else {
@@ -84,12 +88,13 @@ function FacilityForm({ defaultValues, onSuccess }: FacilityFormProps) {
         />
 
         <CustomFormField
-          fieldType={FormFieldType.INPUT}
-          label="Desc"
-          placeholder="Description"
-          description="Facility Description"
+          fieldType={FormFieldType.NUMBER}
+          label="Duration"
+          placeholder="Duration"
+          description="Duration"
           control={form.control}
-          name="description"
+          name="duration"
+          step={5}
         />
 
         <SubmitButton isLoading={isPending || isUpdating}>
@@ -98,8 +103,7 @@ function FacilityForm({ defaultValues, onSuccess }: FacilityFormProps) {
 
         <Button
           variant="destructive"
-          type="button"
-          onClick={() => form.reset({ name: "", description: "" })}>
+          onClick={() => console.log(form.getValues())}>
           Reset
         </Button>
       </form>
@@ -107,4 +111,4 @@ function FacilityForm({ defaultValues, onSuccess }: FacilityFormProps) {
   );
 }
 
-export default FacilityForm;
+export default AppointmentTypeForm;

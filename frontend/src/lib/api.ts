@@ -8,6 +8,7 @@ import { FormPatientType } from "@server/types/patient-types";
 import { FormUserType } from "@server/types/user-types";
 import { FormResourceType } from "@server/types/resource-types";
 import { FormFacilityType } from "@server/types/facility-types";
+import { FormAppointmentTypeType } from "@server/types/appointment-type-types";
 
 const client = hc<AppType>("/");
 
@@ -99,6 +100,16 @@ export async function deleteResource(id: number) {
   return res.json();
 }
 
+export async function getResourceTypes() {
+  const res = await client.api.resourceTypes.$get();
+
+  if (!res.ok) {
+    throw new Error(res.statusText);
+  }
+
+  return res.json();
+}
+
 export async function getAppointments() {
   const res = await client.api.appointments.$get();
 
@@ -136,6 +147,47 @@ export async function updateAppointment(appointment: FormAppointmentType) {
   const res = await client.api.appointments[":id"].$patch({
     param: { id: appointment.id?.toString() || "" },
     json: appointment,
+  });
+
+  if (!res.ok) {
+    throw new Error(res.statusText);
+  }
+
+  return res.json();
+}
+
+export async function createAppointmentType(
+  appointmentType: FormAppointmentTypeType
+) {
+  const res = await client.api.appointmentTypes.$post({
+    json: appointmentType,
+  });
+
+  if (!res.ok) {
+    throw new Error(res.statusText);
+  }
+
+  return res.json();
+}
+
+export async function updateAppointmentType(
+  appointmentType: FormAppointmentTypeType
+) {
+  const res = await client.api.appointmentTypes[":id"].$patch({
+    param: { id: appointmentType.id?.toString() || "" },
+    json: appointmentType,
+  });
+
+  if (!res.ok) {
+    throw new Error(res.statusText);
+  }
+
+  return res.json();
+}
+
+export async function deleteAppointmentType(id: number) {
+  const res = await client.api.appointmentTypes[":id"].$delete({
+    param: { id: id.toString() },
   });
 
   if (!res.ok) {

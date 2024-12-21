@@ -8,9 +8,6 @@ const timestamps = {
   deletedAt: text(),
 };
 
-// Helper for creating timestamp fields
-const timestamp = () => integer("timestamp", { mode: "timestamp" });
-
 // USER TABLE
 export const Users = sqliteTable("Users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -19,8 +16,11 @@ export const Users = sqliteTable("Users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
 });
-export const usersRelations = relations(Users, ({ many }) => ({
-  posts: many(Posts),
+export const usersRelations = relations(Users, ({ one }) => ({
+  profile: one(Profiles, {
+    fields: [Users.id],
+    references: [Profiles.userId],
+  }),
 }));
 
 // PROFILE TABLE
@@ -29,33 +29,39 @@ export const Profiles = sqliteTable("Profiles", {
   bio: text().notNull(),
   userId: int().references(() => Users.id),
 });
-
-// POST TABLE
-export const Posts = sqliteTable("Posts", {
-  id: int().primaryKey({ autoIncrement: true }),
-  title: text().notNull(),
-  content: text().notNull(),
-  userId: int().references(() => Users.id),
-});
-export const postsRelations = relations(Posts, ({ one }) => ({
+export const profilesRelations = relations(Profiles, ({ one }) => ({
   user: one(Users, {
-    fields: [Posts.userId],
+    fields: [Profiles.userId],
     references: [Users.id],
   }),
 }));
 
 // RESOURCE CONFIGURATION TABLE
 
+export const ResourceTypes = sqliteTable("ResourceTypes", {
+  id: int("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+});
+export const resourceTypesRelations = relations(ResourceTypes, ({ many }) => ({
+  resources: many(Resources),
+}));
+
 export const Resources = sqliteTable("Resources", {
   id: int("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
-  resourceType: text("resourceType").notNull(),
+  resourceTypeId: int("resourceTypeId")
+    .notNull()
+    .references(() => ResourceTypes.id),
   description: text("description"),
   ...timestamps,
 });
-export const resourceRelations = relations(Resources, ({ many }) => ({
+export const resourceRelations = relations(Resources, ({ many, one }) => ({
   availability: many(ResourceAvailability),
   appointments: many(Appointments),
+  resourceType: one(ResourceTypes, {
+    fields: [Resources.resourceTypeId],
+    references: [ResourceTypes.id],
+  }),
 }));
 
 export const Facilities = sqliteTable("Facilities", {
@@ -69,11 +75,11 @@ export const facilitiesRelations = relations(Facilities, ({ many }) => ({
 }));
 
 // Gender table
-export const Gender = sqliteTable("Gender", {
+export const Genders = sqliteTable("Genders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
 });
-export const genderRelations = relations(Gender, ({ many }) => ({
+export const gendersRelations = relations(Genders, ({ many }) => ({
   patients: many(Patients),
 }));
 
@@ -83,7 +89,7 @@ export const Patients = sqliteTable("Patients", {
   firstName: text("firstName").notNull(),
   lastName: text("lastName").notNull(),
   dateOfBirth: integer("dateOfBirth").notNull(),
-  genderId: integer("genderId").references(() => Gender.id),
+  genderId: integer("genderId").references(() => Genders.id),
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
@@ -93,9 +99,9 @@ export const Patients = sqliteTable("Patients", {
 });
 export const patientRelations = relations(Patients, ({ many, one }) => ({
   appointments: many(Appointments),
-  gender: one(Gender, {
+  gender: one(Genders, {
     fields: [Patients.genderId],
-    references: [Gender.id],
+    references: [Genders.id],
   }),
 }));
 

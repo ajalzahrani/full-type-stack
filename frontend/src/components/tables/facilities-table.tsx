@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import FacilityDialog from "@/components/models/facility-dialog";
 import { insertFacilitySchema } from "@server/types";
 import { z } from "zod";
+import { FormFacilityType } from "@server/types/facility-types";
 
 function FacilityTable() {
   const queryClient = useQueryClient();
@@ -42,7 +43,7 @@ function FacilityTable() {
   });
 
   const [editingFacility, setEditingFacility] = useState<
-    z.infer<typeof insertFacilitySchema> | undefined
+    FormFacilityType | undefined
   >(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -65,7 +66,11 @@ function FacilityTable() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setEditingFacility(facility);
+                    setEditingFacility({
+                      ...facility,
+                      id: facility.id.toString(),
+                      description: facility.description || "",
+                    });
                     setDialogOpen(true);
                   }}>
                   Edit

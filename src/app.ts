@@ -4,7 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { serveStatic } from "hono/bun";
 import { zValidator } from "@hono/zod-validator";
 import db from "./db";
-import { eq, and, sql, desc, gte, lte } from "drizzle-orm";
+import { eq, and, sql, desc, gte, lte, exists } from "drizzle-orm";
 import { z } from "zod";
 import {
   Users,
@@ -14,7 +14,8 @@ import {
   Patients,
   AppointmentTypes,
   ResourceAvailability,
-  Gender,
+  Genders,
+  ResourceTypes,
 } from "./db/schema";
 import {
   convertFormResourceToDBResource,
@@ -38,6 +39,10 @@ import {
   convertFormPatientToDBPatient,
   FormPatientSchema,
 } from "./types/patient-types";
+import {
+  convertFormAppointmentTypeToDBAppointmentType,
+  FormAppointmentTypeSchema,
+} from "./types/appointment-type-types";
 
 export const app = new Hono()
   .use(logger())
@@ -136,7 +141,11 @@ export const app = new Hono()
       const resources = await db
         .select()
         .from(Resources)
-        .orderBy(desc(Resources.resourceType));
+        .innerJoin(
+          ResourceTypes,
+          eq(Resources.resourceTypeId, ResourceTypes.id)
+        )
+        .orderBy(desc(ResourceTypes.name));
       return c.json(resources);
     } catch (error) {
       throw new HTTPException(400, {
@@ -154,6 +163,10 @@ export const app = new Hono()
       const resource = await db
         .select()
         .from(Resources)
+        .innerJoin(
+          ResourceTypes,
+          eq(Resources.resourceTypeId, ResourceTypes.id)
+        )
         .where(eq(Resources.id, Number(id)))
         .limit(1);
       return c.json(resource);
@@ -206,6 +219,11 @@ export const app = new Hono()
       return c.json({ message: "Resource deleted" });
     }
   )
+  // get resource types
+  .get("/api/resourceTypes", async (c) => {
+    const resourceTypes = await db.select().from(ResourceTypes);
+    return c.json(resourceTypes);
+  })
   // get facilities
   .get("/api/facilities", async (c) => {
     const facilities = await db.select().from(Facilities);
@@ -514,12 +532,69 @@ export const app = new Hono()
     const appointmentTypes = await db.select().from(AppointmentTypes);
     return c.json(appointmentTypes);
   })
+  // get appointment type by id
+  .get(
+    "/api/appointmentTypes/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const appointmentType = await db
+        .select()
+        .from(AppointmentTypes)
+        .where(eq(AppointmentTypes.id, Number(id)));
+      return c.json(appointmentType);
+    }
+  )
+  // create appointment type
+  .post(
+    "/api/appointmentTypes",
+    zValidator("json", FormAppointmentTypeSchema),
+    async (c) => {
+      const appointmentType = c.req.valid("json");
+      const dbAppointmentType =
+        convertFormAppointmentTypeToDBAppointmentType(appointmentType);
+
+      await db.insert(AppointmentTypes).values(dbAppointmentType);
+      return c.json({ message: "Appointment type created" });
+    }
+  )
+  // update appointment type
+  .patch(
+    "/api/appointmentTypes/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("json", FormAppointmentTypeSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const appointmentType = c.req.valid("json");
+
+      const dbAppointmentType =
+        convertFormAppointmentTypeToDBAppointmentType(appointmentType);
+
+      await db
+        .update(AppointmentTypes)
+        .set(dbAppointmentType)
+        .where(eq(AppointmentTypes.id, Number(id)));
+      return c.json({ message: "Appointment type updated" });
+    }
+  )
+  // delete appointment type
+  .delete(
+    "/api/appointmentTypes/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      await db
+        .delete(AppointmentTypes)
+        .where(eq(AppointmentTypes.id, Number(id)));
+      return c.json({ message: "Appointment type deleted" });
+    }
+  )
   // get patients
   .get("/api/patients", async (c) => {
     const patients = await db
       .select()
       .from(Patients)
-      .innerJoin(Gender, eq(Patients.genderId, Gender.id));
+      .innerJoin(Genders, eq(Patients.genderId, Genders.id));
     return c.json(patients);
   })
   // get patient by id
@@ -546,7 +621,7 @@ export const app = new Hono()
         .select()
         .from(Patients)
         .where(eq(Patients.medicalRecordNumber, mrn))
-        .innerJoin(Gender, eq(Patients.genderId, Gender.id))
+        .innerJoin(Genders, eq(Patients.genderId, Genders.id))
         .limit(1);
       return c.json(patient);
     }
@@ -608,7 +683,7 @@ export const app = new Hono()
   // get genders
   .get("/api/genders", async (c) => {
     try {
-      const genders = await db.select().from(Gender);
+      const genders = await db.select().from(Genders);
       return c.json(genders);
     } catch (error) {
       throw new HTTPException(400, {

@@ -8,25 +8,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { deleteResource, getResources } from "@/lib/api";
+import { deleteAppointmentType, getAppointmentTypes } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
-import ResourceDialog from "@/components/models/resource-dialog";
-import { FormResourceType } from "@server/types/resource-types";
+import AppointmentTypeDialog from "@/components/models/appointment-type-dialog";
+import { FormAppointmentTypeType } from "@server/types/appointment-type-types";
 
-function ResourceTable() {
+function AppointmentTypesTable() {
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["resources"],
-    queryFn: () => getResources(),
+  const { data } = useQuery({
+    queryKey: ["appointmentTypes"],
+    queryFn: () => getAppointmentTypes(),
   });
 
   const { mutate: deleteMutate } = useMutation({
-    mutationFn: deleteResource,
+    mutationFn: deleteAppointmentType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
+      queryClient.invalidateQueries({ queryKey: ["appointmentTypes"] });
       toast({
         title: "Resource deleted",
         variant: "default",
@@ -40,8 +40,8 @@ function ResourceTable() {
     },
   });
 
-  const [editingResource, setEditingResource] = useState<
-    FormResourceType | undefined
+  const [editingAppointmentType, setEditingAppointmentType] = useState<
+    FormAppointmentTypeType | undefined
   >(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -51,27 +51,23 @@ function ResourceTable() {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Resource Type</TableHead>
+            <TableHead>Duration</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((resource) => (
-            <TableRow key={resource.Resources.id}>
-              <TableCell>{resource.Resources.name}</TableCell>
-              <TableCell>{resource.Resources.description}</TableCell>
-              <TableCell>{resource.ResourceTypes.name}</TableCell>
+          {data?.map((appointmentType) => (
+            <TableRow key={appointmentType.id}>
+              <TableCell>{appointmentType.name}</TableCell>
+              <TableCell>{appointmentType.duration}</TableCell>
               <TableCell>
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setEditingResource({
-                      ...resource.Resources,
-                      id: resource.Resources.id.toString(),
-                      resourceTypeId: resource.ResourceTypes.id.toString(),
-                      name: resource.Resources.name,
-                      description: resource.Resources.description || "",
+                    setEditingAppointmentType({
+                      ...appointmentType,
+                      id: appointmentType.id.toString(),
+                      duration: appointmentType.duration.toString(),
                     });
                     setDialogOpen(true);
                   }}>
@@ -80,7 +76,7 @@ function ResourceTable() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    deleteMutate(resource.Resources.id);
+                    deleteMutate(appointmentType.id);
                   }}>
                   Delete
                 </Button>
@@ -90,13 +86,13 @@ function ResourceTable() {
         </TableBody>
       </Table>
 
-      <ResourceDialog
+      <AppointmentTypeDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        defaultValues={editingResource}
+        defaultValues={editingAppointmentType}
       />
     </>
   );
 }
 
-export default ResourceTable;
+export default AppointmentTypesTable;

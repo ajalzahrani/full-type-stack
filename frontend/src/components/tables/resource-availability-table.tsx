@@ -13,11 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
 import ResourceAvailabilityDialog from "@/components/models/resource-availability-dialog";
-import {
-  formatDateForInput,
-  formatLocalDateTime,
-  formatTimeForInput,
-} from "@/lib/datetime-format";
+import { formatDateForInput, formatTimeForInput } from "@/lib/datetime-format";
 import { FormResourceAvailabilityType } from "@server/types/resource-availability-types";
 
 function ResourceAvailabilityTable() {

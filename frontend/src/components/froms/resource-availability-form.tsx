@@ -106,12 +106,12 @@ function ResourceAvailabilityForm({
             <SelectGroup>
               {resources?.map((resource) => (
                 <SelectItem
-                  key={resource.id}
-                  value={resource.id.toString()}
+                  key={resource.Resources.id}
+                  value={resource.Resources.id.toString()}
                   defaultChecked={
-                    resource.id == Number(defaultValues?.resourceId)
+                    resource.Resources.id == Number(defaultValues?.resourceId)
                   }>
-                  {resource.name}
+                  {resource.Resources.name}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -126,7 +126,12 @@ function ResourceAvailabilityForm({
             description="Select the facility for the appointment">
             <SelectGroup>
               {facilities?.map((facility) => (
-                <SelectItem key={facility.id} value={facility.id.toString()}>
+                <SelectItem
+                  key={facility.id}
+                  value={facility.id.toString()}
+                  defaultChecked={
+                    facility.id == Number(defaultValues?.facilityId)
+                  }>
                   {facility.name}
                 </SelectItem>
               ))}

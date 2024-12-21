@@ -21,36 +21,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const patientManagementItems = [
-  {
-    title: "Patient Registration",
-    url: "/patient-registration",
-    icon: PersonStanding,
-  },
-];
-
-const appointmentManagementItems = [
-  {
-    title: "Appointments",
-    url: "/appointments",
-    icon: Calendar,
-  },
-  {
-    title: "Resource Availability",
-    url: "/resource-availability",
-    icon: Calendar,
-  },
-  {
-    title: "Resources",
-    url: "/resources",
-    icon: PersonStanding,
-  },
-  {
-    title: "Facilities",
-    url: "/facilities",
-    icon: Building,
-  },
-];
 // Menu items.
 const generalItems = [
   {
@@ -70,12 +40,51 @@ const generalItems = [
   },
 ];
 
+const patientManagementItems = [
+  {
+    title: "Patient Registration",
+    url: "/patient-registration",
+    icon: PersonStanding,
+  },
+];
+
+const resourceManagementItems = [
+  {
+    title: "Resources",
+    url: "/resources",
+    icon: PersonStanding,
+  },
+  {
+    title: "Facilities",
+    url: "/facilities",
+    icon: Building,
+  },
+];
+
+const appointmentManagementItems = [
+  {
+    title: "Resource Availability",
+    url: "/resource-availability",
+    icon: Calendar,
+  },
+  {
+    title: "Appointment Types",
+    url: "/appointment-types",
+    icon: PersonStanding,
+  },
+  {
+    title: "Appointments",
+    url: "/appointments",
+    icon: Calendar,
+  },
+];
+
 export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
         <SidebarMenuItem>
-          <img src="/logo.png" alt="Logo" />
+          <img src="../assets/logo.png" alt="Logo" />
         </SidebarMenuItem>
       </SidebarHeader>
       <SidebarContent>
@@ -107,10 +116,29 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
           <SidebarGroupLabel>Appointment Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {appointmentManagementItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Resource Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {resourceManagementItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
