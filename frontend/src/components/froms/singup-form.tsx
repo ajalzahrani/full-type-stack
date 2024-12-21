@@ -8,26 +8,27 @@ import CustomFormField, { FormFieldType } from "./form";
 import SubmitButton from "../submit-button";
 
 import { Form } from "../ui/form";
-import { insertUserSchema } from "@server/types";
+import { FormUserSchema } from "@server/types/user-types";
 import { createUser } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
+import { FormUserType } from "@server/types/user-types";
 
 function SingupForm() {
   const { mutate, isPending } = useMutation({
     mutationFn: createUser,
   });
 
-  const form = useForm<z.infer<typeof insertUserSchema>>({
-    resolver: zodResolver(insertUserSchema),
+  const form = useForm<FormUserType>({
+    resolver: zodResolver(FormUserSchema),
     defaultValues: {
       username: "",
       password: "",
       name: "",
-      age: 0,
+      age: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof insertUserSchema>) {
+  async function onSubmit(values: FormUserType) {
     mutate(values);
   }
 

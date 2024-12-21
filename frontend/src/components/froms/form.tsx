@@ -54,6 +54,8 @@ interface CustomProps {
   fieldType: FormFieldType;
   step?: number;
   onChange?: (date: Date) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  defaultValue?: string;
 }
 
 const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
@@ -75,6 +77,7 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
               placeholder={props.placeholder}
               {...field}
               className="shad-input border-0"
+              onKeyDown={props.onKeyDown}
             />
           </FormControl>
         </div>
@@ -94,13 +97,13 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
       return (
         <FormControl>
           <PhoneInput
-            defaultCountry="US"
-            placeholder={props.placeholder}
-            international
-            withCountryCallingCode
+            // defaultCountry="US"
+            // placeholder={props.placeholder}
+            // international
+            // withCountryCallingCode
             value={field.value as E164Number | undefined}
             onChange={field.onChange}
-            className="input-phone"
+            className="mt-2 h-11 rounded-md px-3 text-sm border"
           />
         </FormControl>
       );
@@ -210,7 +213,7 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
           <SelectTrigger>
             <SelectValue
               placeholder={props.placeholder}
-              // defaultValue={field.value ? field.value.toString() : undefined}
+              defaultValue={props.defaultValue}
             />
           </SelectTrigger>
           <SelectContent>{props.children}</SelectContent>

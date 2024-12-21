@@ -79,3 +79,5 @@ export const WeekDayOptions = [
   { label: "Friday", value: "6" },
   { label: "Saturday", value: "7" },
 ];
+
+export const GenderOptions = ["male", "female", "other"];

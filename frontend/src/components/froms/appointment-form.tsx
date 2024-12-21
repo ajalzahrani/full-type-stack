@@ -146,7 +146,7 @@ function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
             label="Patient MRN"
             placeholder="Enter patient's Medical Record Number"
             control={form.control}
-            name="patientId"
+            name="patientMrn"
           />
 
           <CustomFormField

@@ -1,32 +1,14 @@
-import {
-  insertAppointmentSchema,
-  insertFacilitySchema,
-  insertPatientSchema,
-  insertResourceAvailabilitySchema,
-  insertResourceConfigurationSchema,
-  insertResourceSchema,
-  insertUserSchema,
-  requestUserByUsernameAndPasswordSchema,
-} from "@server/types";
-import {
-  convertFormResourceAvailabilityToDBResourceAvailability,
-  DBResourceAvailabilitySchema,
-  DBResourceAvailabilityType,
-  FormResourceAvailabilitySchema,
-  FormResourceAvailabilityType,
-} from "@server/types/resource-availability-types";
-import {
-  DBAppointmentSchema,
-  FormAppointmentSchema,
-  FormAppointmentType,
-} from "@server/types/appointment-types";
+import { z } from "zod";
 import { hc } from "hono/client";
 import { AppType } from "@server/app";
-// import { hcWithType } from "@server/hc";
 
-import { z } from "zod";
+import { FormResourceAvailabilityType } from "@server/types/resource-availability-types";
+import { FormAppointmentType } from "@server/types/appointment-types";
+import { FormPatientType } from "@server/types/patient-types";
+import { FormUserType } from "@server/types/user-types";
+import { FormResourceType } from "@server/types/resource-types";
+import { FormFacilityType } from "@server/types/facility-types";
 
-// const client = hcWithType("http://localhost:3030");
 const client = hc<AppType>("/");
 
 export async function getTotalUsers() {
@@ -40,7 +22,7 @@ export async function getTotalUsers() {
   return data.total;
 }
 
-export async function createUser(user: z.infer<typeof insertUserSchema>) {
+export async function createUser(user: FormUserType) {
   const res = await client.api.users.signup.$post({ json: user });
 
   if (!res.ok) {
@@ -50,9 +32,7 @@ export async function createUser(user: z.infer<typeof insertUserSchema>) {
   return res.json();
 }
 
-export async function loginUser(
-  user: z.infer<typeof requestUserByUsernameAndPasswordSchema>
-) {
+export async function loginUser(user: { username: string; password: string }) {
   const res = await client.api.users.login.$post({ json: user });
 
   if (!res.ok) {
@@ -84,9 +64,7 @@ export async function getResourceById(id: number) {
   return res.json();
 }
 
-export async function createResource(
-  resource: z.infer<typeof insertResourceSchema>
-) {
+export async function createResource(resource: FormResourceType) {
   const res = await client.api.resources.$post({ json: resource });
 
   if (!res.ok) {
@@ -96,9 +74,7 @@ export async function createResource(
   return res.json();
 }
 
-export async function updateResource(
-  resource: z.infer<typeof insertResourceSchema>
-) {
+export async function updateResource(resource: FormResourceType) {
   const res = await client.api.resources[":id"].$patch({
     param: { id: resource.id?.toString() || "" },
     json: resource,
@@ -203,9 +179,7 @@ export async function getFacilityById(id: number) {
   return res.json();
 }
 
-export async function createFacility(
-  facility: z.infer<typeof insertFacilitySchema>
-) {
+export async function createFacility(facility: FormFacilityType) {
   const res = await client.api.facilities.$post({ json: facility });
 
   if (!res.ok) {
@@ -215,9 +189,7 @@ export async function createFacility(
   return res.json();
 }
 
-export async function updateFacility(
-  facility: z.infer<typeof insertFacilitySchema>
-) {
+export async function updateFacility(facility: FormFacilityType) {
   const res = await client.api.facilities[":id"].$patch({
     param: { id: facility.id?.toString() || "" },
     json: facility,
@@ -233,52 +205,6 @@ export async function updateFacility(
 export async function deleteFacility(id: number) {
   const res = await client.api.facilities[":id"].$delete({
     param: { id: id.toString() },
-  });
-
-  if (!res.ok) {
-    throw new Error(res.statusText);
-  }
-
-  return res.json();
-}
-
-export async function getResourceConfiguration() {
-  const res = await client.api.resourceConfiguration.$get();
-
-  if (!res.ok) {
-    throw new Error(res.statusText);
-  }
-
-  return res.json();
-}
-
-export async function getResourceConfigurationById(id: number) {
-  const res = await client.api.resourceConfiguration[":id"].$get({
-    param: { id: id.toString() },
-  });
-
-  if (!res.ok) {
-    throw new Error(res.statusText);
-  }
-
-  return res.json();
-}
-
-export async function createResourceConfiguration(
-  formData: z.infer<typeof insertResourceConfigurationSchema>
-) {
-  const transformedData = {
-    ...formData,
-    resourceId: Number(formData.resourceId),
-    facilityId: Number(formData.facilityId),
-    estimatedWaitingTime: Number(formData.estimatedWaitingTime),
-    statusId: Number(formData.statusId),
-    startDate: formData.startDate ? new Date(formData.startDate) : null,
-    endDate: formData.endDate ? new Date(formData.endDate) : null,
-  };
-
-  const res = await client.api.resourceConfiguration.$post({
-    json: transformedData,
   });
 
   if (!res.ok) {
@@ -318,8 +244,6 @@ export async function getResourceAvailabilityByResourceIdAndDate(
 export async function createResourceAvailability(
   formData: FormResourceAvailabilityType
 ) {
-  // const dbResourceAvailability: DBResourceAvailabilityType =
-  //   convertFormResourceAvailabilityToDBResourceAvailability(formData);
   const res = await client.api.resourceAvailability.$post({
     json: formData,
   });
@@ -362,33 +286,6 @@ export async function deleteResourceAvailability(id: number) {
   return res.json();
 }
 
-export async function updateResourceConfiguration(
-  resourceConfiguration: z.infer<typeof insertResourceConfigurationSchema>
-) {
-  const res = await client.api.resourceConfiguration[":id"].$patch({
-    param: { id: resourceConfiguration.id?.toString() || "" },
-    json: resourceConfiguration,
-  });
-
-  if (!res.ok) {
-    throw new Error(res.statusText);
-  }
-
-  return res.json();
-}
-
-export async function deleteResourceConfiguration(id: number) {
-  const res = await client.api.resourceConfiguration[":id"].$delete({
-    param: { id: id.toString() },
-  });
-
-  if (!res.ok) {
-    throw new Error(res.statusText);
-  }
-
-  return res.json();
-}
-
 export async function getPatients() {
   const res = await client.api.patients.$get();
 
@@ -411,9 +308,7 @@ export async function getPatientByMedicalRecordNumber(mrn: string) {
   return res.json();
 }
 
-export async function createPatient(
-  patient: z.infer<typeof insertPatientSchema>
-) {
+export async function createPatient(patient: FormPatientType) {
   const res = await client.api.patients.$post({ json: patient });
 
   if (!res.ok) {
@@ -423,9 +318,7 @@ export async function createPatient(
   return res.json();
 }
 
-export async function updatePatient(
-  patient: z.infer<typeof insertPatientSchema>
-) {
+export async function updatePatient(patient: FormPatientType) {
   const res = await client.api.patients[":id"].$patch({
     param: { id: patient.id?.toString() || "" },
     json: patient,
@@ -438,10 +331,16 @@ export async function updatePatient(
   return res.json();
 }
 
-export async function blockPatient(id: number, status: boolean) {
+export async function blockPatient({
+  id,
+  blocked,
+}: {
+  id: number;
+  blocked: boolean;
+}) {
   const res = await client.api.patients[":id"].block.$patch({
     param: { id: id.toString() },
-    json: { blocked: status },
+    json: { blocked: blocked },
   });
 
   if (!res.ok) {
@@ -453,6 +352,16 @@ export async function blockPatient(id: number, status: boolean) {
 
 export async function getAppointmentTypes() {
   const res = await client.api.appointmentTypes.$get();
+
+  if (!res.ok) {
+    throw new Error(res.statusText);
+  }
+
+  return res.json();
+}
+
+export async function getGenders() {
+  const res = await client.api.genders.$get();
 
   if (!res.ok) {
     throw new Error(res.statusText);

@@ -11,7 +11,10 @@ const FormPatientSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   dateOfBirth: z.string(), // Will be converted to timestamp
-  gender: z.string().optional(),
+  genderId: z
+    .string()
+    .regex(/^\d+$/, "Gender ID must be a numeric string")
+    .optional(),
   email: z.string().email("Invalid email").optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
@@ -30,7 +33,8 @@ export const convertFormPatientToDBPatient = (
   return {
     ...formPatient,
     id: formPatient.id ? parseInt(formPatient.id) : undefined,
-    dateOfBirth: new Date(formPatient.dateOfBirth),
+    dateOfBirth: new Date(formPatient.dateOfBirth).getTime(),
+    genderId: formPatient.genderId ? parseInt(formPatient.genderId) : null,
     blocked: formPatient.blocked ?? false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

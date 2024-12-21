@@ -7,10 +7,6 @@ const FormAppointmentSchema = z.object({
   id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
   resourceId: z.string().regex(/^\d+$/, "Resource ID must be a numeric string"),
   patientMrn: z.string().regex(/^\d+$/, "Patient ID must be a numeric string"),
-  facilityId: z
-    .string()
-    .regex(/^\d+$/, "Facility ID must be a numeric string")
-    .optional(),
   typeId: z.string().regex(/^\d+$/, "Type ID must be a numeric string"),
   appointmentDate: z.string(),
   startTime: z.string(),
@@ -40,11 +36,11 @@ export const convertFormAppointmentToDBAppointment = (
     patientMrn: formAppointment.patientMrn,
     typeId: parseInt(formAppointment.typeId),
     startTime: combineDateAndTime(
-      formAppointment.startTime,
+      formAppointment.appointmentDate,
       formAppointment.startTime
     ),
     endTime: combineDateAndTime(
-      formAppointment.endTime,
+      formAppointment.appointmentDate,
       formAppointment.endTime
     ),
     status: formAppointment.status,

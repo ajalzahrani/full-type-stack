@@ -6,9 +6,12 @@ const DBUserSchema = createInsertSchema(schema.Users);
 const FormUserSchema = z.object({
   id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
   name: z.string(),
-  age: z.number(),
+  age: z.string().regex(/^\d+$/, "Age must be a numeric string"),
   username: z.string(),
   password: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  deletedAt: z.string().optional(),
 });
 
 export const requestUserByUsernameAndPasswordSchema = FormUserSchema.pick({
@@ -23,7 +26,7 @@ export const convertFormUserToDBUser = (formUser: FormUserType): DBUserType => {
   return {
     ...formUser,
     id: formUser.id ? parseInt(formUser.id) : undefined,
-    age: formUser.age,
+    age: parseInt(formUser.age),
     username: formUser.username,
     password: formUser.password,
   };

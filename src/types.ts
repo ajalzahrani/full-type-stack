@@ -54,34 +54,6 @@ export const requestFacilityByIdSchema = selectFacilitySchema.pick({
   id: true,
 });
 
-// RESOURCE CONFIGURATION TABLE
-export const insertResourceConfigurationSchema = createInsertSchema(
-  schema.ResourceConfiguration
-).extend({
-  resourceId: z.union([z.string(), z.number()]).transform((val) => Number(val)),
-  facilityId: z.union([z.string(), z.number()]).transform((val) => Number(val)),
-  estimatedWaitingTime: z
-    .union([z.string(), z.number()])
-    .transform((val) => Number(val)),
-  statusId: z.union([z.string(), z.number()]).transform((val) => Number(val)),
-  startDate: z
-    .union([z.string(), z.date()])
-    .transform((val) => (typeof val === "string" ? new Date(val) : val))
-    .nullable(),
-  endDate: z
-    .union([z.string(), z.date()])
-    .transform((val) => (typeof val === "string" ? new Date(val) : val))
-    .nullable(),
-  weekDays: z.string(),
-  blocked: z.boolean().optional(),
-});
-
-export const selectResourceConfigurationSchema = createSelectSchema(
-  schema.ResourceConfiguration
-);
-export const requestResourceConfigurationByIdSchema =
-  selectResourceConfigurationSchema.pick({ id: true });
-
 // RESOURCE AVAILABILITY TABLE
 export const insertResourceAvailabilitySchema = createInsertSchema(
   schema.ResourceAvailability
@@ -103,18 +75,7 @@ export const requestResourceAvailabilityByIdSchema =
 
 // APPOINTMENTS TABLE
 export const insertAppointmentSchema = createInsertSchema(schema.Appointments);
-// .extend({
-//   resourceConfigId: z
-//     .union([z.string(), z.number()])
-//     .transform((val) => Number(val)),
-//   patientId: z.number().optional(),
-//   mrn: z.string().min(10).max(10),
-//   appointmentDate: z.date(),
-//   appointmentTime: z.string(),
-//   // appointmentTime: z
-//   //   .union([z.string(), z.date()])
-//   //   .transform((val) => (typeof val === "string" ? new Date(val) : val)),
-// });
+
 export const selectAppointmentSchema = createSelectSchema(
   schema.Appointments
 ).extend({

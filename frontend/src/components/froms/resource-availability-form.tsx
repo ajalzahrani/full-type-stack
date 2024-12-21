@@ -16,7 +16,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SelectItem } from "@/components/ui/select";
 import { SelectGroup } from "@/components/ui/select";
 import { WeekDayOptions } from "@/constants";
-import { Button } from "../ui/button";
 import {
   FormResourceAvailabilityType,
   FormResourceAvailabilitySchema,
@@ -188,6 +187,7 @@ function ResourceAvailabilityForm({
             }
             placeholder="Select Week Days"
           />
+
           <CustomFormField
             fieldType={FormFieldType.CHECKBOX}
             label="Is Recurring"

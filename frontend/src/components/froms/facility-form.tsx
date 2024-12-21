@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useForm } from "react-hook-form";
@@ -8,14 +6,17 @@ import CustomFormField, { FormFieldType } from "./form";
 import SubmitButton from "../submit-button";
 
 import { Form } from "../ui/form";
-import { insertFacilitySchema } from "@server/types";
+import {
+  FormFacilitySchema,
+  FormFacilityType,
+} from "@server/types/facility-types";
 import { createFacility, updateFacility } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface FacilityFormProps {
-  defaultValues?: z.infer<typeof insertFacilitySchema>;
+  defaultValues?: FormFacilityType;
   onSuccess: () => void;
 }
 
@@ -57,12 +58,12 @@ function FacilityForm({ defaultValues, onSuccess }: FacilityFormProps) {
     },
   });
 
-  const form = useForm<z.infer<typeof insertFacilitySchema>>({
-    resolver: zodResolver(insertFacilitySchema),
+  const form = useForm<FormFacilityType>({
+    resolver: zodResolver(FormFacilitySchema),
     defaultValues,
   });
 
-  const onSubmit = (values: z.infer<typeof insertFacilitySchema>) => {
+  const onSubmit = (values: FormFacilityType) => {
     if (defaultValues?.id) {
       updateMutate({ ...values, id: defaultValues.id });
     } else {

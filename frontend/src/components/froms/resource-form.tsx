@@ -17,9 +17,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ResourceTypes } from "@/constants";
 import { SelectItem } from "@/components/ui/select";
 import { SelectGroup } from "@/components/ui/select";
+import {
+  FormResourceSchema,
+  FormResourceType,
+} from "@server/types/resource-types";
 
 interface ResourceFormProps {
-  defaultValues?: z.infer<typeof insertResourceSchema>;
+  defaultValues?: FormResourceType;
   onSuccess: () => void;
 }
 
@@ -61,12 +65,12 @@ function ResourceForm({ defaultValues, onSuccess }: ResourceFormProps) {
     },
   });
 
-  const form = useForm<z.infer<typeof insertResourceSchema>>({
-    resolver: zodResolver(insertResourceSchema),
+  const form = useForm<FormResourceType>({
+    resolver: zodResolver(FormResourceSchema),
     defaultValues,
   });
 
-  const onSubmit = (values: z.infer<typeof insertResourceSchema>) => {
+  const onSubmit = (values: FormResourceType) => {
     if (defaultValues?.id) {
       updateMutate({ ...values, id: defaultValues.id });
     } else {

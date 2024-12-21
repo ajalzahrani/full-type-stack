@@ -5,12 +5,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import FacilityForm from "@/components/froms/facility-form";
-import { insertFacilitySchema } from "@server/types";
-import { z } from "zod";
+import { FormFacilityType } from "@server/types/facility-types";
 interface FacilityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultValues?: z.infer<typeof insertFacilitySchema>;
+  defaultValues?: FormFacilityType;
 }
 
 function FacilityDialog({

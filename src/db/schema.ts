@@ -13,11 +13,11 @@ const timestamp = () => integer("timestamp", { mode: "timestamp" });
 
 // USER TABLE
 export const Users = sqliteTable("Users", {
-  id: int().primaryKey({ autoIncrement: true }),
-  name: text().notNull(),
-  age: int().notNull(),
-  username: text().notNull().unique(),
-  password: text().notNull(),
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  age: integer("age").notNull(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
 });
 export const usersRelations = relations(Users, ({ many }) => ({
   posts: many(Posts),
@@ -54,7 +54,6 @@ export const Resources = sqliteTable("Resources", {
   ...timestamps,
 });
 export const resourceRelations = relations(Resources, ({ many }) => ({
-  resourceConfiguration: many(ResourceConfiguration),
   availability: many(ResourceAvailability),
   appointments: many(Appointments),
 }));
@@ -66,64 +65,17 @@ export const Facilities = sqliteTable("Facilities", {
   ...timestamps,
 });
 export const facilitiesRelations = relations(Facilities, ({ many }) => ({
-  resourceConfiguration: many(ResourceConfiguration),
   appointments: many(Appointments),
 }));
 
-export const ResourceConfiguration = sqliteTable("ResourceConfigurations", {
-  id: int("id").primaryKey({ autoIncrement: true }),
-  resourceId: int("resourceId").notNull(), // Foreign key to the actual resource
-  assignedBy: int("assignedBy"), // ID of the user who created/assigned this resource
-  estimatedWaitingTime: int("estimatedWaitingTime").default(0), // Default is 0
-  startTime: text("startTime"), // Example: '08:00 AM'
-  endTime: text("endTime"), // Example: '05:00 PM'
-  startDate: integer({ mode: "timestamp" }), // Availability start date
-  endDate: integer({ mode: "timestamp" }), // Availability end date
-  weekDays: text("weekDays"), // Example: 'Monday,Tuesday'
-  statusId: int("statusId").notNull(), // Status ID referencing a status table
-  blocked: integer({ mode: "boolean" }).default(false), // Default to not blocked
-  facilityId: int("facilityId"), // Foreign key to a facility table
-  ...timestamps,
+// Gender table
+export const Gender = sqliteTable("Gender", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
 });
-export const resourceConfigurationRelations = relations(
-  ResourceConfiguration,
-  ({ one, many }) => ({
-    // Relation with Appointments
-    appointments: many(Appointments),
-
-    // Relation with ResourceTypes
-    resourceType: one(Resources, {
-      fields: [ResourceConfiguration.resourceId],
-      references: [Resources.id],
-    }),
-
-    // Relation with Facilities
-    facility: one(Facilities, {
-      fields: [ResourceConfiguration.facilityId],
-      references: [Facilities.id],
-    }),
-  })
-);
-
-// export const Appointments = sqliteTable("Appointments", {
-//   id: int("id").primaryKey({ autoIncrement: true }),
-//   resourceConfigId: integer("resourceConfigId").notNull(), // Foreign key to ResourceConfiguration
-//   patientId: int("patientId").notNull(), // Foreign key to Patients table
-//   appointmentTime: integer({ mode: "timestamp" }).notNull(), // Exact time of the appointment
-//   status: text("status").notNull(), // Example: 'scheduled', 'completed', etc.
-//   typeId: int("typeId"), // Optional: Appointment type foreign key
-//   ...timestamps,
-// });
-// export const appointmentsRelations = relations(Appointments, ({ one }) => ({
-//   resourceConfiguration: one(ResourceConfiguration, {
-//     fields: [Appointments.resourceConfigId],
-//     references: [ResourceConfiguration.id],
-//   }),
-//   patient: one(Patients, {
-//     fields: [Appointments.patientId],
-//     references: [Patients.id],
-//   }),
-// }));
+export const genderRelations = relations(Gender, ({ many }) => ({
+  patients: many(Patients),
+}));
 
 // Patients table
 export const Patients = sqliteTable("Patients", {
@@ -131,7 +83,7 @@ export const Patients = sqliteTable("Patients", {
   firstName: text("firstName").notNull(),
   lastName: text("lastName").notNull(),
   dateOfBirth: integer("dateOfBirth").notNull(),
-  gender: text("gender"),
+  genderId: integer("genderId").references(() => Gender.id),
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
@@ -139,8 +91,12 @@ export const Patients = sqliteTable("Patients", {
   blocked: integer({ mode: "boolean" }).default(false),
   ...timestamps,
 });
-export const patientRelations = relations(Patients, ({ many }) => ({
+export const patientRelations = relations(Patients, ({ many, one }) => ({
   appointments: many(Appointments),
+  gender: one(Gender, {
+    fields: [Patients.genderId],
+    references: [Gender.id],
+  }),
 }));
 
 // ResourceAvailability table

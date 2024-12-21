@@ -51,17 +51,26 @@ function AppointmentTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Resource Type</TableHead>
+            <TableHead>Patient</TableHead>
+            <TableHead>Appointment Date</TableHead>
+            <TableHead>Start Time</TableHead>
+            <TableHead>End Time</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {data?.map((appointment) => (
             <TableRow key={appointment.Resources?.name}>
-              <TableCell>{appointment.Facilities?.name}</TableCell>
-              <TableCell>{appointment.Appointments.startTime}</TableCell>
+              <TableCell>{appointment.Patients?.firstName}</TableCell>
+              <TableCell>
+                {formatDateForInput(appointment.Appointments.appointmentDate)}
+              </TableCell>
+              <TableCell>
+                {formatTimeForInput(appointment.Appointments.startTime)}
+              </TableCell>
+              <TableCell>
+                {formatTimeForInput(appointment.Appointments.endTime)}
+              </TableCell>
               <TableCell>
                 <Button
                   variant="outline"
@@ -79,8 +88,9 @@ function AppointmentTable() {
                       endTime: formatTimeForInput(
                         appointment.Appointments.endTime
                       ),
-                      facilityId: appointment.Facilities?.id.toString() || "",
-                      patientId: appointment.Patients?.id.toString() || "",
+                      patientMrn:
+                        appointment.Patients?.medicalRecordNumber.toString() ||
+                        "",
                       typeId: appointment.AppointmentTypes?.id.toString() || "",
                       notes: appointment.Appointments.notes || "",
                     });
@@ -91,7 +101,7 @@ function AppointmentTable() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    deleteMutate(appointment.id);
+                    deleteMutate(appointment.Appointments.id);
                   }}>
                   Delete
                 </Button>
