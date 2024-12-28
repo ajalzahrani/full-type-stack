@@ -9,9 +9,6 @@ const FormUserSchema = z.object({
   age: z.string().regex(/^\d+$/, "Age must be a numeric string"),
   username: z.string(),
   password: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  deletedAt: z.string().optional(),
 });
 
 export const requestUserByUsernameAndPasswordSchema = FormUserSchema.pick({
@@ -21,6 +18,9 @@ export const requestUserByUsernameAndPasswordSchema = FormUserSchema.pick({
 
 export type DBUserType = z.infer<typeof DBUserSchema>;
 export type FormUserType = z.infer<typeof FormUserSchema>;
+export type RequestUserByUsernameAndPasswordType = z.infer<
+  typeof requestUserByUsernameAndPasswordSchema
+>;
 
 export const convertFormUserToDBUser = (formUser: FormUserType): DBUserType => {
   return {

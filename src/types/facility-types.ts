@@ -2,8 +2,8 @@ import * as schema from "../db/schema";
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-const DBFacilitySchema = createInsertSchema(schema.Facilities);
-const FormFacilitySchema = z.object({
+export const DBFacilitySchema = createInsertSchema(schema.Facilities);
+export const FormFacilitySchema = z.object({
   id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
   name: z.string(),
   description: z.string().optional(),
@@ -23,5 +23,3 @@ export const convertFormFacilityToDBFacility = (
     deletedAt: null,
   };
 };
-
-export { DBFacilitySchema, FormFacilitySchema };

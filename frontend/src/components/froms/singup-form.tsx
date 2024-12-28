@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useForm } from "react-hook-form";
@@ -8,17 +7,39 @@ import CustomFormField, { FormFieldType } from "./form";
 import SubmitButton from "../submit-button";
 
 import { Form } from "../ui/form";
-import { FormUserSchema } from "@server/types/user-types";
 import { createUser } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
-import { FormUserType } from "@server/types/user-types";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+
+const FormUserSchema = z.object({
+  id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  age: z.string().regex(/^\d+$/, "Age must be a numeric string"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(2, "Password must be at least 2 characters"),
+});
 
 function SingupForm() {
+  const navigate = useNavigate();
   const { mutate, isPending } = useMutation({
     mutationFn: createUser,
+    onSuccess: () => {
+      toast({
+        title: "User created successfully",
+        variant: "default",
+      });
+      navigate("/signin");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
-  const form = useForm<FormUserType>({
+  const form = useForm<z.infer<typeof FormUserSchema>>({
     resolver: zodResolver(FormUserSchema),
     defaultValues: {
       username: "",
@@ -28,7 +49,7 @@ function SingupForm() {
     },
   });
 
-  async function onSubmit(values: FormUserType) {
+  async function onSubmit(values: z.infer<typeof FormUserSchema>) {
     mutate(values);
   }
 
@@ -68,7 +89,14 @@ function SingupForm() {
           name="age"
         />
 
-        <SubmitButton isLoading={isPending}>Signup</SubmitButton>
+        <div className="flex justify-evenly items-center gap-4">
+          <SubmitButton isLoading={isPending}>Signup</SubmitButton>
+          <button
+            type="button"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md">
+            <Link to="/">Cancel</Link>
+          </button>
+        </div>
       </form>
     </Form>
   );

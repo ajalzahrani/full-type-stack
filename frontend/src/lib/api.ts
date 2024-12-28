@@ -16,7 +16,8 @@ export async function getTotalUsers() {
   const res = await client.api.users.total.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   const data = await res.json();
@@ -27,7 +28,8 @@ export async function createUser(user: FormUserType) {
   const res = await client.api.users.signup.$post({ json: user });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -37,7 +39,8 @@ export async function loginUser(user: { username: string; password: string }) {
   const res = await client.api.users.login.$post({ json: user });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();

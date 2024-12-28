@@ -62,8 +62,16 @@ export const app = new Hono()
   })
   // get total users
   .get("/api/users/total", async (c) => {
-    const total = await db.select({ total: sql<number>`count(*)` }).from(Users);
-    return c.json(total[0]);
+    try {
+      const total = await db
+        .select({ total: sql<number>`count(*)` })
+        .from(Users);
+      return c.json(total[0]);
+    } catch (error) {
+      throw new HTTPException(400, {
+        res: c.json({ message: "Users not found" }, 400),
+      });
+    }
   })
   // get user by id
   .get(
@@ -97,12 +105,25 @@ export const app = new Hono()
 
     const dbUser = convertFormUserToDBUser(user);
 
+    // check if user already exists
+    const existingUser = await db
+      .select()
+      .from(Users)
+      .where(eq(Users.username, dbUser.username))
+      .limit(1);
+
+    if (existingUser.length > 0) {
+      throw new HTTPException(400, {
+        res: c.json({ message: "User already exists" }, 400),
+      });
+    }
+
     try {
       // insert user into db
       await db.insert(Users).values(dbUser);
     } catch (error) {
       throw new HTTPException(400, {
-        res: c.json({ error: "User not created" }, 400),
+        res: c.json({ message: "User not created" }, 400),
       });
     }
 
@@ -127,7 +148,7 @@ export const app = new Hono()
 
       if (user.length === 0) {
         throw new HTTPException(403, {
-          res: c.json({ error: "Unauthorized" }, 403),
+          res: c.json({ message: "Invalid username or password" }, 403),
         });
       }
 
