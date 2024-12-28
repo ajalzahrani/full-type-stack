@@ -13,10 +13,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
 import FacilityDialog from "@/components/models/facility-dialog";
-import { insertFacilitySchema } from "@server/types";
-import { z } from "zod";
 import { FormFacilityType } from "@server/types/facility-types";
-
+import ConfirmDialog from "@/components/models/confirm-dialog";
 function FacilityTable() {
   const queryClient = useQueryClient();
 
@@ -47,6 +45,13 @@ function FacilityTable() {
   >(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [deleteConfirmDialogOpen, setDeleteConfirmDialogOpen] = useState<{
+    open: boolean;
+    option: {
+      id: number;
+    };
+  }>({ open: false, option: { id: 0 } });
+
   return (
     <>
       <Table>
@@ -62,7 +67,7 @@ function FacilityTable() {
             <TableRow key={facility.id}>
               <TableCell>{facility.name}</TableCell>
               <TableCell>{facility.description}</TableCell>
-              <TableCell>
+              <TableCell className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -78,7 +83,10 @@ function FacilityTable() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    deleteMutate(facility.id);
+                    setDeleteConfirmDialogOpen({
+                      open: true,
+                      option: { id: facility.id },
+                    });
                   }}>
                   Delete
                 </Button>
@@ -92,6 +100,18 @@ function FacilityTable() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         defaultValues={editingFacility}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmDialogOpen.open}
+        onOpenChange={(open) =>
+          setDeleteConfirmDialogOpen({ ...deleteConfirmDialogOpen, open })
+        }
+        title="Are you sure you want to delete this facility?"
+        description="This action will delete the facility from the system."
+        onConfirm={() => {
+          deleteMutate(deleteConfirmDialogOpen.option.id);
+        }}
       />
     </>
   );

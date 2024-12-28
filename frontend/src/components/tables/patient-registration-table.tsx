@@ -15,7 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import PatientRegistrationDialog from "@/components/models/patient-registration-dialog";
 import { FormPatientType } from "@server/types/patient-types";
 import { formatDateForInput } from "@/lib/datetime-format";
-
+import ConfirmDialog from "@/components/models/confirm-dialog";
 function PatientRegistrationTable() {
   const queryClient = useQueryClient();
 
@@ -46,6 +46,13 @@ function PatientRegistrationTable() {
   >(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState<{
+    open: boolean;
+    option: {
+      id: number;
+      blocked: boolean;
+    };
+  }>({ open: false, option: { id: 0, blocked: false } });
   return (
     <>
       <Table>
@@ -55,6 +62,7 @@ function PatientRegistrationTable() {
             <TableHead>MRN</TableHead>
             <TableHead>Date of Birth</TableHead>
             <TableHead>Gender</TableHead>
+            <TableHead>Blocked</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -68,6 +76,9 @@ function PatientRegistrationTable() {
               </TableCell>
               <TableCell>{patient.Genders.name}</TableCell>
               <TableCell>
+                {patient.Patients.blocked ? "Blocked" : "Active"}
+              </TableCell>
+              <TableCell className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -93,9 +104,12 @@ function PatientRegistrationTable() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    blockMutate({
-                      id: patient.Patients.id,
-                      blocked: !patient.Patients.blocked,
+                    setConfirmDialogOpen({
+                      open: true,
+                      option: {
+                        id: patient.Patients.id,
+                        blocked: patient.Patients.blocked || false,
+                      },
                     });
                   }}>
                   {patient.Patients.blocked ? "Unblock" : "Block"}
@@ -110,6 +124,28 @@ function PatientRegistrationTable() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         defaultValues={editingPatient}
+      />
+      <ConfirmDialog
+        open={confirmDialogOpen.open}
+        onOpenChange={(open) =>
+          setConfirmDialogOpen({ ...confirmDialogOpen, open })
+        }
+        title={
+          confirmDialogOpen.option.blocked
+            ? "Are you sure you want to unblock this patient?"
+            : "Are you sure you want to block this patient?"
+        }
+        description={
+          confirmDialogOpen.option.blocked
+            ? "This action will unblock the patient from accessing the system."
+            : "This action will block the patient from accessing the system."
+        }
+        onConfirm={() => {
+          blockMutate({
+            id: confirmDialogOpen.option.id,
+            blocked: !confirmDialogOpen.option.blocked,
+          });
+        }}
       />
     </>
   );

@@ -5,12 +5,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ResourceForm from "@/components/froms/resource-form";
-import { insertResourceSchema } from "@server/types";
-import { z } from "zod";
+import { FormResourceType } from "@server/types/resource-types";
+
 interface ResourceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultValues?: z.infer<typeof insertResourceSchema>;
+  defaultValues?: FormResourceType;
 }
 
 function ResourceDialog({

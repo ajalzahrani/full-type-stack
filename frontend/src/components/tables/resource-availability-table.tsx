@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import ResourceAvailabilityDialog from "@/components/models/resource-availability-dialog";
 import { formatDateForInput, formatTimeForInput } from "@/lib/datetime-format";
 import { FormResourceAvailabilityType } from "@server/types/resource-availability-types";
+import ConfirmDialog from "@/components/models/confirm-dialog";
 
 function ResourceAvailabilityTable() {
   const queryClient = useQueryClient();
@@ -44,6 +45,13 @@ function ResourceAvailabilityTable() {
   const [editingResourceAvailability, setEditingResourceAvailability] =
     useState<FormResourceAvailabilityType | undefined>(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [deleteConfirmDialogOpen, setDeleteConfirmDialogOpen] = useState<{
+    open: boolean;
+    option: {
+      id: number;
+    };
+  }>({ open: false, option: { id: 0 } });
 
   return (
     <>
@@ -90,7 +98,7 @@ function ResourceAvailabilityTable() {
               <TableCell>
                 {resource.ResourceAvailability.isRecurring ? "Yes" : "No"}
               </TableCell>
-              <TableCell>
+              <TableCell className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -129,7 +137,10 @@ function ResourceAvailabilityTable() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    deleteMutate(resource.ResourceAvailability.id);
+                    setDeleteConfirmDialogOpen({
+                      open: true,
+                      option: { id: resource.ResourceAvailability.id },
+                    });
                   }}>
                   Delete
                 </Button>
@@ -143,6 +154,18 @@ function ResourceAvailabilityTable() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         defaultValues={editingResourceAvailability}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmDialogOpen.open}
+        onOpenChange={(open) =>
+          setDeleteConfirmDialogOpen({ ...deleteConfirmDialogOpen, open })
+        }
+        title="Are you sure you want to delete this resource availability?"
+        description="This action will delete the resource availability from the system."
+        onConfirm={() => {
+          deleteMutate(deleteConfirmDialogOpen.option.id);
+        }}
       />
     </>
   );

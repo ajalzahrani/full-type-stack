@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
 import ResourceDialog from "@/components/models/resource-dialog";
 import { FormResourceType } from "@server/types/resource-types";
+import ConfirmDialog from "@/components/models/confirm-dialog";
 
 function ResourceTable() {
   const queryClient = useQueryClient();
@@ -45,6 +46,13 @@ function ResourceTable() {
   >(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [deleteConfirmDialogOpen, setDeleteConfirmDialogOpen] = useState<{
+    open: boolean;
+    option: {
+      id: number;
+    };
+  }>({ open: false, option: { id: 0 } });
+
   return (
     <>
       <Table>
@@ -62,7 +70,7 @@ function ResourceTable() {
               <TableCell>{resource.Resources.name}</TableCell>
               <TableCell>{resource.Resources.description}</TableCell>
               <TableCell>{resource.ResourceTypes.name}</TableCell>
-              <TableCell>
+              <TableCell className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -80,7 +88,10 @@ function ResourceTable() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    deleteMutate(resource.Resources.id);
+                    setDeleteConfirmDialogOpen({
+                      open: true,
+                      option: { id: resource.Resources.id },
+                    });
                   }}>
                   Delete
                 </Button>
@@ -94,6 +105,18 @@ function ResourceTable() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         defaultValues={editingResource}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmDialogOpen.open}
+        onOpenChange={(open) =>
+          setDeleteConfirmDialogOpen({ ...deleteConfirmDialogOpen, open })
+        }
+        title="Are you sure you want to delete this resource?"
+        description="This action will delete the resource from the system."
+        onConfirm={() => {
+          deleteMutate(deleteConfirmDialogOpen.option.id);
+        }}
       />
     </>
   );

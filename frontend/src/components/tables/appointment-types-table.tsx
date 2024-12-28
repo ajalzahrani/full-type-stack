@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
 import AppointmentTypeDialog from "@/components/models/appointment-type-dialog";
 import { FormAppointmentTypeType } from "@server/types/appointment-type-types";
+import ConfirmDialog from "@/components/models/confirm-dialog";
 
 function AppointmentTypesTable() {
   const queryClient = useQueryClient();
@@ -45,6 +46,13 @@ function AppointmentTypesTable() {
   >(undefined);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [deleteConfirmDialogOpen, setDeleteConfirmDialogOpen] = useState<{
+    open: boolean;
+    option: {
+      id: number;
+    };
+  }>({ open: false, option: { id: 0 } });
+
   return (
     <>
       <Table>
@@ -60,7 +68,7 @@ function AppointmentTypesTable() {
             <TableRow key={appointmentType.id}>
               <TableCell>{appointmentType.name}</TableCell>
               <TableCell>{appointmentType.duration}</TableCell>
-              <TableCell>
+              <TableCell className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -76,7 +84,10 @@ function AppointmentTypesTable() {
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    deleteMutate(appointmentType.id);
+                    setDeleteConfirmDialogOpen({
+                      open: true,
+                      option: { id: appointmentType.id },
+                    });
                   }}>
                   Delete
                 </Button>
@@ -90,6 +101,18 @@ function AppointmentTypesTable() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         defaultValues={editingAppointmentType}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmDialogOpen.open}
+        onOpenChange={(open) =>
+          setDeleteConfirmDialogOpen({ ...deleteConfirmDialogOpen, open })
+        }
+        title="Are you sure you want to delete this appointment type?"
+        description="This action will delete the appointment type from the system."
+        onConfirm={() => {
+          deleteMutate(deleteConfirmDialogOpen.option.id);
+        }}
       />
     </>
   );
