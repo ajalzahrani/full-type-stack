@@ -50,7 +50,8 @@ export async function getResources() {
   const res = await client.api.resources.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -62,7 +63,8 @@ export async function getResourceById(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -72,7 +74,8 @@ export async function createResource(resource: FormResourceType) {
   const res = await client.api.resources.$post({ json: resource });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -85,7 +88,8 @@ export async function updateResource(resource: FormResourceType) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -97,7 +101,8 @@ export async function deleteResource(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -107,7 +112,8 @@ export async function getResourceTypes() {
   const res = await client.api.resourceTypes.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -117,9 +123,9 @@ export async function getAppointments() {
   const res = await client.api.appointments.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
-
   return res.json();
 }
 
@@ -129,7 +135,8 @@ export async function getAppointmentById(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -138,9 +145,9 @@ export async function getAppointmentById(id: number) {
 export async function createAppointment(appointment: FormAppointmentType) {
   const res = await client.api.appointments.$post({ json: appointment });
 
-  const resJson = await res.json();
   if (!res.ok) {
-    throw new Error(resJson.message);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -153,7 +160,8 @@ export async function updateAppointment(appointment: FormAppointmentType) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -167,7 +175,8 @@ export async function createAppointmentType(
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -182,7 +191,8 @@ export async function updateAppointmentType(
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -194,7 +204,8 @@ export async function deleteAppointmentType(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -206,7 +217,8 @@ export async function deleteAppointment(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -216,7 +228,8 @@ export async function getFacilities() {
   const res = await client.api.facilities.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -228,9 +241,9 @@ export async function getFacilityById(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
-
   return res.json();
 }
 
@@ -238,7 +251,8 @@ export async function createFacility(facility: FormFacilityType) {
   const res = await client.api.facilities.$post({ json: facility });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -251,7 +265,8 @@ export async function updateFacility(facility: FormFacilityType) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -263,7 +278,8 @@ export async function deleteFacility(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -273,7 +289,8 @@ export async function getResourceAvailability() {
   const res = await client.api.resourceAvailability.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -290,7 +307,8 @@ export async function getResourceAvailabilityByResourceIdAndDate(
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -304,7 +322,8 @@ export async function createResourceAvailability(
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -323,7 +342,8 @@ export async function updateResourceAvailability(
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -335,7 +355,8 @@ export async function deleteResourceAvailability(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -345,7 +366,8 @@ export async function getPatients() {
   const res = await client.api.patients.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -357,7 +379,8 @@ export async function getPatientByMedicalRecordNumber(mrn: string) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -367,7 +390,8 @@ export async function createPatient(patient: FormPatientType) {
   const res = await client.api.patients.$post({ json: patient });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -380,7 +404,8 @@ export async function updatePatient(patient: FormPatientType) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -399,7 +424,8 @@ export async function blockPatient({
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -409,7 +435,8 @@ export async function getAppointmentTypes() {
   const res = await client.api.appointmentTypes.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();
@@ -419,7 +446,8 @@ export async function getGenders() {
   const res = await client.api.genders.$get();
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    const error = await res.json();
+    throw new Error(error.message);
   }
 
   return res.json();

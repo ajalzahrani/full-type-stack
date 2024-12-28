@@ -58,7 +58,7 @@ function FacilityTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((facility) => (
+          {data?.facilities.map((facility) => (
             <TableRow key={facility.id}>
               <TableCell>{facility.name}</TableCell>
               <TableCell>{facility.description}</TableCell>

@@ -61,7 +61,7 @@ function ResourceAvailabilityTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((resource) => (
+          {data?.resourceAvailability.map((resource) => (
             <TableRow key={resource.ResourceAvailability.id}>
               <TableCell>{resource.Resources.name}</TableCell>
               <TableCell>

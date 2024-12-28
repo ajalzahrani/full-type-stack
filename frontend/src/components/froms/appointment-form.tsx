@@ -1,4 +1,5 @@
 import React from "react";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -16,18 +17,26 @@ import {
   getResources,
   getAppointmentTypes,
   getResourceAvailabilityByResourceIdAndDate,
-  getResourcesWithAppointments,
 } from "@/lib/api";
-import {
-  FormAppointmentType,
-  FormAppointmentSchema,
-} from "@server/types/appointment-types";
+import { FormAppointmentType } from "@server/types/appointment-types";
 import { Button } from "../ui/button";
 
 interface AppointmentFormProps {
   defaultValues?: FormAppointmentType;
   onSuccess: () => void;
 }
+
+const FormAppointmentSchema = z.object({
+  id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
+  resourceId: z.string().regex(/^\d+$/, "Resource ID must be a numeric string"),
+  patientMrn: z.string().regex(/^\d+$/, "Patient ID must be a numeric string"),
+  typeId: z.string().regex(/^\d+$/, "Type ID must be a numeric string"),
+  appointmentDate: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
+  status: z.string().default("scheduled"),
+  notes: z.string().optional(),
+});
 
 function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
   const queryClient = useQueryClient();
@@ -140,7 +149,7 @@ function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
           placeholder="Select a resource"
           description="Select a doctor, nurse, or room">
           <SelectGroup>
-            {resources?.map((resource) => (
+            {resources?.resources.map((resource) => (
               <SelectItem
                 key={resource.Resources.id}
                 value={resource.Resources.id.toString()}>
@@ -167,7 +176,7 @@ function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
             placeholder="Select appointment type"
             description="Select the type of appointment">
             <SelectGroup>
-              {appointmentTypes?.map((type) => (
+              {appointmentTypes?.appointmentTypes.map((type) => (
                 <SelectItem key={type.id} value={type.id.toString()}>
                   {type.name}
                 </SelectItem>
@@ -192,7 +201,7 @@ function AppointmentForm({ defaultValues, onSuccess }: AppointmentFormProps) {
             <div className="mt-4 space-y-4">
               <h3 className="text-lg font-semibold">Available Time Slots</h3>
               <div className="grid grid-cols-4 gap-2">
-                {availableSlots.map((slot) => (
+                {availableSlots.timeSlots.map((slot) => (
                   <Button
                     type="button"
                     key={`${slot.startTime}-${slot.endTime}`}

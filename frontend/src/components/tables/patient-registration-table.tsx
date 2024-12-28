@@ -59,7 +59,7 @@ function PatientRegistrationTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((patient) => (
+          {data?.patients.map((patient) => (
             <TableRow key={patient.Patients.id}>
               <TableCell>{patient.Patients.firstName}</TableCell>
               <TableCell>{patient.Patients.medicalRecordNumber}</TableCell>

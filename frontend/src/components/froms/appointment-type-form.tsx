@@ -1,26 +1,30 @@
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { useForm } from "react-hook-form";
 import CustomFormField, { FormFieldType } from "./form";
-
 import SubmitButton from "../submit-button";
-
 import { Form } from "../ui/form";
 
 import { createAppointmentType, updateAppointmentType } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  FormAppointmentTypeSchema,
-  FormAppointmentTypeType,
-} from "@server/types/appointment-type-types";
+import { FormAppointmentTypeType } from "@server/types/appointment-type-types";
 import { Button } from "../ui/button";
 
 interface AppointmentTypeFormProps {
   defaultValues?: FormAppointmentTypeType;
   onSuccess: () => void;
 }
+
+const FormAppointmentTypeSchema = z.object({
+  id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
+  name: z.string(),
+  duration: z
+    .string()
+    .regex(/^\d+$/, "Duration must be a numeric string")
+    .default("5"),
+});
 
 function AppointmentTypeForm({
   defaultValues,

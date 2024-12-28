@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -9,16 +10,29 @@ import CustomFormField, { FormFieldType } from "@/components/froms/form";
 import SubmitButton from "@/components/submit-button";
 import "react-datepicker/dist/react-datepicker.css";
 import { createPatient, getGenders, updatePatient } from "@/lib/api";
-import {
-  FormPatientType,
-  FormPatientSchema,
-} from "@server/types/patient-types";
+import { FormPatientType } from "@server/types/patient-types";
 import { Button } from "@/components/ui/button";
 
 interface PatientRegistrationFormProps {
   defaultValues?: FormPatientType;
   onSuccess: () => void;
 }
+
+const FormPatientSchema = z.object({
+  id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  dateOfBirth: z.string(), // Will be converted to timestamp
+  genderId: z
+    .string()
+    .regex(/^\d+$/, "Gender ID must be a numeric string")
+    .optional(),
+  email: z.string().email("Invalid email").optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  medicalRecordNumber: z.string().min(1, "Medical record number is required"),
+  blocked: z.boolean().optional().default(false),
+});
 
 function PatientRegistrationForm({
   defaultValues,
@@ -134,7 +148,7 @@ function PatientRegistrationForm({
                 placeholder="Select a gender"
                 description="Select the gender for the patient">
                 <SelectGroup>
-                  {genders?.map((gender) => (
+                  {genders?.genders.map((gender) => (
                     <SelectItem
                       key={gender.id}
                       value={gender.id?.toString() || ""}>

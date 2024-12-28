@@ -57,7 +57,7 @@ function ResourceTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((resource) => (
+          {data?.resources.map((resource) => (
             <TableRow key={resource.Resources.id}>
               <TableCell>{resource.Resources.name}</TableCell>
               <TableCell>{resource.Resources.description}</TableCell>

@@ -53,12 +53,12 @@ export const app = new Hono()
 
     if (users.length === 0) {
       throw new HTTPException(404, {
-        res: c.json({ error: "Users not found" }, 404),
+        res: c.json({ message: "Users not found" }, 404),
       });
     }
 
     // return users
-    return c.json(users);
+    return c.json({ message: "Users found", users });
   })
   // get total users
   .get("/api/users/total", async (c) => {
@@ -66,7 +66,7 @@ export const app = new Hono()
       const total = await db
         .select({ total: sql<number>`count(*)` })
         .from(Users);
-      return c.json(total[0]);
+      return c.json({ message: "Total users found", total: total[0].total });
     } catch (error) {
       throw new HTTPException(400, {
         res: c.json({ message: "Users not found" }, 400),
@@ -90,12 +90,12 @@ export const app = new Hono()
 
       if (user.length === 0) {
         throw new HTTPException(404, {
-          res: c.json({ error: "User not found" }, 404),
+          res: c.json({ message: "User not found" }, 404),
         });
       }
 
       // return user
-      return c.json(user);
+      return c.json({ message: "User found", user });
     }
   )
   // create user
@@ -153,7 +153,7 @@ export const app = new Hono()
       }
 
       // return user
-      return c.json(user);
+      return c.json({ message: "Login successful", user });
     }
   )
   // get resources
@@ -167,10 +167,10 @@ export const app = new Hono()
           eq(Resources.resourceTypeId, ResourceTypes.id)
         )
         .orderBy(desc(ResourceTypes.name));
-      return c.json(resources);
+      return c.json({ message: "Resources found", resources });
     } catch (error) {
       throw new HTTPException(400, {
-        res: c.json({ error: "Resources not found" }, 400),
+        res: c.json({ message: "Resources not found" }, 400),
       });
     }
   })
@@ -190,7 +190,7 @@ export const app = new Hono()
         )
         .where(eq(Resources.id, Number(id)))
         .limit(1);
-      return c.json(resource);
+      return c.json({ message: "Resource found", resource });
     }
   )
   // create resource
@@ -206,7 +206,7 @@ export const app = new Hono()
     } catch (error) {
       console.error("Error creating resource:", error);
       throw new HTTPException(400, {
-        res: c.json({ error: "Resource not created" }, 400),
+        res: c.json({ message: "Resource not created" }, 400),
       });
     }
 
@@ -242,13 +242,25 @@ export const app = new Hono()
   )
   // get resource types
   .get("/api/resourceTypes", async (c) => {
-    const resourceTypes = await db.select().from(ResourceTypes);
-    return c.json(resourceTypes);
+    try {
+      const resourceTypes = await db.select().from(ResourceTypes);
+      return c.json({ message: "Resource types found", resourceTypes });
+    } catch (error) {
+      throw new HTTPException(400, {
+        res: c.json({ message: "Resource types not found" }, 400),
+      });
+    }
   })
   // get facilities
   .get("/api/facilities", async (c) => {
-    const facilities = await db.select().from(Facilities);
-    return c.json(facilities);
+    try {
+      const facilities = await db.select().from(Facilities);
+      return c.json({ message: "Facilities found", facilities });
+    } catch (error) {
+      throw new HTTPException(400, {
+        res: c.json({ message: "Facilities not found" }, 400),
+      });
+    }
   })
   // get facility by id
   .get(
@@ -262,7 +274,7 @@ export const app = new Hono()
         .from(Facilities)
         .where(eq(Facilities.id, Number(id)))
         .limit(1);
-      return c.json(facility);
+      return c.json({ message: "Facility found", facility });
     }
   )
   // create facility
@@ -280,7 +292,7 @@ export const app = new Hono()
         await db.insert(Facilities).values(dbFacility);
       } catch (error) {
         throw new HTTPException(400, {
-          res: c.json({ error: "Facility not created" }, 400),
+          res: c.json({ message: "Facility not created" }, 400),
         });
       }
 
@@ -316,11 +328,23 @@ export const app = new Hono()
   )
   // get Resource Availability
   .get("/api/resourceAvailability", async (c) => {
-    const resourceAvailability = await db
-      .select()
-      .from(ResourceAvailability)
-      .innerJoin(Resources, eq(ResourceAvailability.resourceId, Resources.id));
-    return c.json(resourceAvailability);
+    try {
+      const resourceAvailability = await db
+        .select()
+        .from(ResourceAvailability)
+        .innerJoin(
+          Resources,
+          eq(ResourceAvailability.resourceId, Resources.id)
+        );
+      return c.json({
+        message: "Resource availability found",
+        resourceAvailability,
+      });
+    } catch (error) {
+      throw new HTTPException(400, {
+        res: c.json({ message: "Resource availability not found" }, 400),
+      });
+    }
   })
   // get Resource Availability by id
   .get(
@@ -332,7 +356,10 @@ export const app = new Hono()
         .select()
         .from(ResourceAvailability)
         .where(eq(ResourceAvailability.id, Number(id)));
-      return c.json(resourceAvailability);
+      return c.json({
+        message: "Resource availability found",
+        resourceAvailability,
+      });
     }
   )
   .get(
@@ -354,7 +381,7 @@ export const app = new Hono()
         );
 
       if (!availability.length) {
-        return c.json([]);
+        return c.json({ message: "No availability found", timeSlots: [] });
       }
 
       // Generate time slots based on consultation duration
@@ -389,7 +416,7 @@ export const app = new Hono()
         }
       }
 
-      return c.json(timeSlots);
+      return c.json({ message: "Time slots found", timeSlots });
     }
   )
   // create resource availability
@@ -403,8 +430,6 @@ export const app = new Hono()
         convertFormResourceAvailabilityToDBResourceAvailability(
           resourceAvailability
         );
-
-      console.log(dbResourceAvailability);
 
       try {
         await db.insert(ResourceAvailability).values(dbResourceAvailability);
@@ -459,16 +484,25 @@ export const app = new Hono()
   )
   // get appointments
   .get("/api/appointments", async (c) => {
-    const appointments = await db
-      .select()
-      .from(Appointments)
-      .leftJoin(
-        Patients,
-        eq(Appointments.patientMrn, Patients.medicalRecordNumber)
-      )
-      .leftJoin(AppointmentTypes, eq(Appointments.typeId, AppointmentTypes.id))
-      .leftJoin(Resources, eq(Appointments.resourceId, Resources.id));
-    return c.json(appointments);
+    try {
+      const appointments = await db
+        .select()
+        .from(Appointments)
+        .leftJoin(
+          Patients,
+          eq(Appointments.patientMrn, Patients.medicalRecordNumber)
+        )
+        .leftJoin(
+          AppointmentTypes,
+          eq(Appointments.typeId, AppointmentTypes.id)
+        )
+        .leftJoin(Resources, eq(Appointments.resourceId, Resources.id));
+      return c.json({ message: "Appointments found", appointments });
+    } catch (error) {
+      throw new HTTPException(400, {
+        res: c.json({ message: "Appointments not found" }, 400),
+      });
+    }
   })
   // get appointment by id
   .get(
@@ -482,7 +516,7 @@ export const app = new Hono()
         .from(Appointments)
         .where(eq(Appointments.id, Number(id)))
         .limit(1);
-      return c.json(appointment);
+      return c.json({ message: "Appointment found", appointment });
     }
   )
   // create appointment
@@ -503,7 +537,7 @@ export const app = new Hono()
 
       if (patient.length === 0) {
         throw new HTTPException(404, {
-          res: c.json({ error: "Patient not found" }, 404),
+          res: c.json({ message: "Patient not found" }, 404),
         });
       }
 
@@ -513,7 +547,7 @@ export const app = new Hono()
       } catch (error) {
         console.error("Error creating appointment:", error);
         throw new HTTPException(400, {
-          res: c.json({ error: "Appointment not created" }, 400),
+          res: c.json({ message: "Appointment not created" }, 400),
         });
       }
 
@@ -550,8 +584,17 @@ export const app = new Hono()
   )
   // get appointment types
   .get("/api/appointmentTypes", async (c) => {
-    const appointmentTypes = await db.select().from(AppointmentTypes);
-    return c.json(appointmentTypes);
+    try {
+      const appointmentTypes = await db.select().from(AppointmentTypes);
+      return c.json({
+        message: "Appointment types found",
+        appointmentTypes,
+      });
+    } catch (error) {
+      throw new HTTPException(400, {
+        res: c.json({ message: "Appointment types not found" }, 400),
+      });
+    }
   })
   // get appointment type by id
   .get(
@@ -563,7 +606,10 @@ export const app = new Hono()
         .select()
         .from(AppointmentTypes)
         .where(eq(AppointmentTypes.id, Number(id)));
-      return c.json(appointmentType);
+      return c.json({
+        message: "Appointment type found",
+        appointmentType,
+      });
     }
   )
   // create appointment type
@@ -612,11 +658,17 @@ export const app = new Hono()
   )
   // get patients
   .get("/api/patients", async (c) => {
-    const patients = await db
-      .select()
-      .from(Patients)
-      .innerJoin(Genders, eq(Patients.genderId, Genders.id));
-    return c.json(patients);
+    try {
+      const patients = await db
+        .select()
+        .from(Patients)
+        .innerJoin(Genders, eq(Patients.genderId, Genders.id));
+      return c.json({ message: "Patients found", patients });
+    } catch (error) {
+      throw new HTTPException(400, {
+        res: c.json({ message: "Patients not found" }, 400),
+      });
+    }
   })
   // get patient by id
   .get(
@@ -629,7 +681,7 @@ export const app = new Hono()
         .from(Patients)
         .where(eq(Patients.id, Number(id)))
         .limit(1);
-      return c.json(patient);
+      return c.json({ message: "Patient found", patient });
     }
   )
   // get patient by medical record number
@@ -644,7 +696,7 @@ export const app = new Hono()
         .where(eq(Patients.medicalRecordNumber, mrn))
         .innerJoin(Genders, eq(Patients.genderId, Genders.id))
         .limit(1);
-      return c.json(patient);
+      return c.json({ message: "Patient found", patient });
     }
   )
   // create patient
@@ -661,7 +713,7 @@ export const app = new Hono()
 
     if (patientExists.length > 0) {
       throw new HTTPException(400, {
-        res: c.json({ error: "Patient already exists" }, 400),
+        res: c.json({ message: "Patient already exists" }, 400),
       });
     }
 
@@ -705,10 +757,10 @@ export const app = new Hono()
   .get("/api/genders", async (c) => {
     try {
       const genders = await db.select().from(Genders);
-      return c.json(genders);
+      return c.json({ message: "Genders found", genders });
     } catch (error) {
       throw new HTTPException(400, {
-        res: c.json({ error: "Genders not found" }, 400),
+        res: c.json({ message: "Genders not found" }, 400),
       });
     }
   });
@@ -723,7 +775,7 @@ app.onError((err, c) => {
     // Get the custom response
     return err.getResponse();
   }
-  return c.json({ error: "Internal Server Error" }, 500);
+  return c.json({ message: "Internal Server Error" }, 500);
 });
 
 export default app;

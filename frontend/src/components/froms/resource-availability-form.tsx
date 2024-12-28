@@ -16,16 +16,31 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SelectItem } from "@/components/ui/select";
 import { SelectGroup } from "@/components/ui/select";
 import { WeekDayOptions } from "@/constants";
-import {
-  FormResourceAvailabilityType,
-  FormResourceAvailabilitySchema,
-} from "@server/types/resource-availability-types";
+import { FormResourceAvailabilityType } from "@server/types/resource-availability-types";
 import { MultiSelect } from "../ui/multi-select";
 
 interface ResourceAvailabilityFormProps {
   defaultValues?: FormResourceAvailabilityType;
   onSuccess: () => void;
 }
+
+const FormResourceAvailabilitySchema = z.object({
+  id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
+  resourceId: z.string().regex(/^\d+$/, "Resource ID must be a numeric string"),
+  startTime: z.string(),
+  endTime: z.string(),
+  startDate: z.string(),
+  endDate: z.string().nullable(),
+  facilityId: z.string().regex(/^\d+$/, "Facility ID must be a numeric string"),
+  consultationDuration: z
+    .string()
+    .regex(/^\d+$/, "Consultation Duration must be a numeric string"),
+  followupDuration: z
+    .string()
+    .regex(/^\d+$/, "Followup Duration must be a numeric string"),
+  weekDays: z.string(),
+  isRecurring: z.boolean().optional(),
+});
 
 function ResourceAvailabilityForm({
   defaultValues,
@@ -104,7 +119,7 @@ function ResourceAvailabilityForm({
             placeholder="Resource Type"
             description="Resource Type">
             <SelectGroup>
-              {resources?.map((resource) => (
+              {resources?.resources.map((resource) => (
                 <SelectItem
                   key={resource.Resources.id}
                   value={resource.Resources.id.toString()}
@@ -125,7 +140,7 @@ function ResourceAvailabilityForm({
             placeholder="Select a facility"
             description="Select the facility for the appointment">
             <SelectGroup>
-              {facilities?.map((facility) => (
+              {facilities?.facilities.map((facility) => (
                 <SelectItem
                   key={facility.id}
                   value={facility.id.toString()}

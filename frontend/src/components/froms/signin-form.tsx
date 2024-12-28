@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import CustomFormField, { FormFieldType } from "./form";
@@ -9,7 +10,6 @@ import { loginUser } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import z from "node_modules/zod/lib";
 
 const FormLoginUserSchema = z.object({
   username: z.string(),

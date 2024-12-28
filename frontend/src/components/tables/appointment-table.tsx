@@ -19,7 +19,7 @@ import { formatDateForInput, formatTimeForInput } from "@/lib/datetime-format";
 function AppointmentTable() {
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["appointments"],
     queryFn: () => getAppointments(),
   });
@@ -59,7 +59,7 @@ function AppointmentTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((appointment) => (
+          {data?.appointments.map((appointment) => (
             <TableRow key={appointment.Resources?.name}>
               <TableCell>{appointment.Patients?.firstName}</TableCell>
               <TableCell>

@@ -56,7 +56,7 @@ function AppointmentTypesTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((appointmentType) => (
+          {data?.appointmentTypes.map((appointmentType) => (
             <TableRow key={appointmentType.id}>
               <TableCell>{appointmentType.name}</TableCell>
               <TableCell>{appointmentType.duration}</TableCell>

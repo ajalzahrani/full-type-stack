@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useForm } from "react-hook-form";
@@ -13,16 +14,20 @@ import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { SelectItem } from "@/components/ui/select";
 import { SelectGroup } from "@/components/ui/select";
-import {
-  FormResourceSchema,
-  FormResourceType,
-} from "@server/types/resource-types";
+import { FormResourceType } from "@server/types/resource-types";
 import { Button } from "../ui/button";
 
 interface ResourceFormProps {
   defaultValues?: FormResourceType;
   onSuccess: () => void;
 }
+
+const FormResourceSchema = z.object({
+  id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
+  name: z.string(),
+  resourceTypeId: z.string(),
+  description: z.string().optional(),
+});
 
 function ResourceForm({ defaultValues, onSuccess }: ResourceFormProps) {
   const queryClient = useQueryClient();
@@ -109,7 +114,7 @@ function ResourceForm({ defaultValues, onSuccess }: ResourceFormProps) {
             placeholder="Resource Type"
             description="Resource Type">
             <SelectGroup>
-              {resourceTypes?.map((resourceType) => (
+              {resourceTypes?.resourceTypes.map((resourceType) => (
                 <SelectItem
                   key={resourceType.id}
                   value={resourceType.id.toString()}>

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useForm } from "react-hook-form";
@@ -6,10 +7,7 @@ import CustomFormField, { FormFieldType } from "./form";
 import SubmitButton from "../submit-button";
 
 import { Form } from "../ui/form";
-import {
-  FormFacilitySchema,
-  FormFacilityType,
-} from "@server/types/facility-types";
+import { FormFacilityType } from "@server/types/facility-types";
 import { createFacility, updateFacility } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
@@ -20,6 +18,12 @@ interface FacilityFormProps {
   defaultValues?: FormFacilityType;
   onSuccess: () => void;
 }
+
+export const FormFacilitySchema = z.object({
+  id: z.string().regex(/^\d+$/, "ID must be a numeric string").optional(),
+  name: z.string(),
+  description: z.string().optional(),
+});
 
 function FacilityForm({ defaultValues, onSuccess }: FacilityFormProps) {
   const queryClient = useQueryClient();
