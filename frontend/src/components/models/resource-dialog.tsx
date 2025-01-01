@@ -20,7 +20,7 @@ function ResourceDialog({
 }: ResourceDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-screen-sm max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{defaultValues ? "Edit" : "Add"} Resource</DialogTitle>
         </DialogHeader>
