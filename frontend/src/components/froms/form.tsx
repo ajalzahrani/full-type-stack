@@ -23,6 +23,7 @@ import { Textarea } from "../ui/textarea";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import { format, parse } from "date-fns";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 export enum FormFieldType {
   INPUT = "input",
@@ -54,8 +55,11 @@ interface CustomProps {
   fieldType: FormFieldType;
   step?: number;
   onChange?: (date: Date) => void;
+  onMultiSelectChange?: (selected: string[]) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   defaultValue?: string;
+  options?: any;
+  selected?: any;
 }
 
 const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
@@ -219,14 +223,19 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
           <SelectContent>{props.children}</SelectContent>
         </Select>
       );
-    // case FormFieldType.MULTI_SELECT:
-    //   return (
-    //     <MultiSelect
-    //       options={props.}
-    //       selected={field.value}
-    //       onChange={field.onChange}
-    //     />
-    //   );
+    case FormFieldType.MULTI_SELECT:
+      return (
+        <>
+          {props.onMultiSelectChange && (
+            <MultiSelect
+              options={props.options}
+              selected={props.selected}
+              onChange={props.onMultiSelectChange}
+              placeholder={props.placeholder}
+            />
+          )}
+        </>
+      );
     case FormFieldType.SKELETON:
       return props.renderSkeleton ? props.renderSkeleton(field) : null;
 

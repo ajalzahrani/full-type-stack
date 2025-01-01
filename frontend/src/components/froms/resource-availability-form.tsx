@@ -17,7 +17,8 @@ import { SelectItem } from "@/components/ui/select";
 import { SelectGroup } from "@/components/ui/select";
 import { WeekDayOptions } from "@/constants";
 import { FormResourceAvailabilityType } from "@server/types/resource-availability-types";
-import { MultiSelect } from "../ui/multi-select";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { Button } from "../ui/button";
 
 interface ResourceAvailabilityFormProps {
   defaultValues?: FormResourceAvailabilityType;
@@ -46,7 +47,6 @@ function ResourceAvailabilityForm({
   defaultValues,
   onSuccess,
 }: ResourceAvailabilityFormProps) {
-  console.log("Default Values:", defaultValues);
   const queryClient = useQueryClient();
 
   const { data: resources } = useQuery({
@@ -95,7 +95,10 @@ function ResourceAvailabilityForm({
 
   const form = useForm<FormResourceAvailabilityType>({
     resolver: zodResolver(FormResourceAvailabilitySchema),
-    defaultValues: defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      weekDays: defaultValues?.weekDays || "",
+    },
   });
 
   const onSubmit = (values: FormResourceAvailabilityType) => {
@@ -195,17 +198,27 @@ function ResourceAvailabilityForm({
         </div>
 
         <div className="flex flex-col gap-6 xl:flex-row">
-          <MultiSelect
+          <CustomFormField
+            fieldType={FormFieldType.MULTI_SELECT}
             options={WeekDayOptions}
+            control={form.control}
+            onMultiSelectChange={(selected) => {
+              console.log("Selected Week Days:", selected);
+              const weekDaysString = selected.join(",");
+              form.setValue("weekDays", weekDaysString, {
+                shouldValidate: true,
+              });
+            }}
+            name="weekDays"
+            label="Week Days"
+            placeholder="Select Week Days"
             selected={
               form.getValues("weekDays")
-                ? form.getValues("weekDays").split(",")
+                ? form.getValues("weekDays").split(",").filter(Boolean)
+                : defaultValues?.weekDays
+                ? defaultValues.weekDays.split(",")
                 : []
             }
-            onChange={(selected) =>
-              form.setValue("weekDays", selected.join(","))
-            }
-            placeholder="Select Week Days"
           />
 
           <CustomFormField
@@ -244,12 +257,12 @@ function ResourceAvailabilityForm({
           {defaultValues?.id ? "Update" : "Add"}
         </SubmitButton>
 
-        {/* <Button
+        <Button
           type="button"
           variant="outline"
-          onClick={() => console.log(form.getValues())}>
-          Console
-        </Button> */}
+          onClick={() => console.log(form.getValues("weekDays"))}>
+          Console week days
+        </Button>
       </form>
     </Form>
   );
