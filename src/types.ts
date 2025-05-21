@@ -27,12 +27,12 @@ export const requestProfileByUserIdSchema = selectProfileSchema.pick({
 });
 
 // POSTS TABLE
-export const insertPostSchema = createInsertSchema(schema.Posts);
-export const selectPostSchema = createSelectSchema(schema.Posts);
-export const requestPostByIdSchema = selectPostSchema.pick({ id: true });
-export const requestPostByUserIdSchema = selectPostSchema.pick({
-  userId: true,
-});
+// export const insertPostSchema = createInsertSchema(schema.Posts);
+// export const selectPostSchema = createSelectSchema(schema.Posts);
+// export const requestPostByIdSchema = selectPostSchema.pick({ id: true });
+// export const requestPostByUserIdSchema = selectPostSchema.pick({
+//   userId: true,
+// });
 
 // RESOURCE CONFIGURATION TABLE
 export const insertResourceSchema = createInsertSchema(schema.Resources);

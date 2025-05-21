@@ -43,9 +43,14 @@ import {
   convertFormAppointmentTypeToDBAppointmentType,
   FormAppointmentTypeSchema,
 } from "./types/appointment-type-types";
+import { insertResourceTypeSchema } from "./types";
+import { csrf } from "hono/csrf";
+import { cors } from "hono/cors";
 
 export const app = new Hono()
   .use(logger())
+  .use("*", cors())
+  // .use("*", csrf({ origin: "http://localhost:5173" }))
   // get users
   .get("/api/users", async (c, next) => {
     // get users from db
@@ -159,15 +164,13 @@ export const app = new Hono()
   // get resources
   .get("/api/resources", async (c) => {
     try {
-      const resources = await db
-        .select()
-        .from(Resources)
-        .innerJoin(
-          ResourceTypes,
-          eq(Resources.resourceTypeId, ResourceTypes.id)
-        )
-        .orderBy(desc(ResourceTypes.name));
-      return c.json({ message: "Resources found", resources });
+      const resources = await db.select().from(Resources);
+      // .innerJoin(
+      //   ResourceTypes,
+      //   eq(Resources.resourceTypeId, ResourceTypes.id)
+      // )
+      // .orderBy(desc(ResourceTypes.name));
+      return c.json(resources);
     } catch (error) {
       throw new HTTPException(400, {
         res: c.json({ message: "Resources not found" }, 400),
@@ -184,37 +187,41 @@ export const app = new Hono()
       const resource = await db
         .select()
         .from(Resources)
-        .innerJoin(
-          ResourceTypes,
-          eq(Resources.resourceTypeId, ResourceTypes.id)
-        )
+        // .innerJoin(
+        //   ResourceTypes,
+        //   eq(Resources.resourceTypeId, ResourceTypes.id)
+        // )
         .where(eq(Resources.id, Number(id)))
         .limit(1);
-      return c.json({ message: "Resource found", resource });
+      return c.json(resource);
     }
   )
   // create resource
-  .post("/api/resources", zValidator("json", FormResourceSchema), async (c) => {
-    // create resource
-    const resource = c.req.valid("json");
+  .post(
+    "/api/resources/create",
+    zValidator("json", FormResourceSchema),
+    async (c) => {
+      // create resource
+      const resource = c.req.valid("json");
 
-    const dbResource = convertFormResourceToDBResource(resource);
+      const dbResource = convertFormResourceToDBResource(resource);
 
-    try {
-      // insert resource into db
-      await db.insert(Resources).values(dbResource);
-    } catch (error) {
-      console.error("Error creating resource:", error);
-      throw new HTTPException(400, {
-        res: c.json({ message: "Resource not created" }, 400),
-      });
+      try {
+        // insert resource into db
+        await db.insert(Resources).values(dbResource);
+      } catch (error) {
+        console.error("Error creating resource:", error);
+        throw new HTTPException(400, {
+          res: c.json({ message: "Resource not created" }, 400),
+        });
+      }
+
+      return c.json({ message: "Resource created" });
     }
-
-    return c.json({ message: "Resource created" });
-  })
+  )
   // update resource
   .patch(
-    "/api/resources/:id",
+    "/api/resources/:id/edit",
     zValidator("param", z.object({ id: z.string() })),
     zValidator("json", FormResourceSchema),
     async (c) => {
@@ -232,7 +239,7 @@ export const app = new Hono()
   )
   // delete resource
   .delete(
-    "/api/resources/:id",
+    "/api/resources/delete/:id",
     zValidator("param", z.object({ id: z.string() })),
     async (c) => {
       const { id } = c.req.valid("param");
@@ -244,18 +251,56 @@ export const app = new Hono()
   .get("/api/resourceTypes", async (c) => {
     try {
       const resourceTypes = await db.select().from(ResourceTypes);
-      return c.json({ message: "Resource types found", resourceTypes });
+      return c.json(resourceTypes);
     } catch (error) {
       throw new HTTPException(400, {
         res: c.json({ message: "Resource types not found" }, 400),
       });
     }
   })
+  // get resource type by id
+  .get(
+    "/api/resourceTypes/:id",
+    zValidator("param", z.object({ id: z.string() })),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const resourceType = await db
+        .select()
+        .from(ResourceTypes)
+        .where(eq(ResourceTypes.id, Number(id)));
+      return c.json(resourceType);
+    }
+  )
+  // create resource type
+  .post(
+    "/api/resourceTypes/create",
+    zValidator("json", insertResourceTypeSchema),
+    async (c) => {
+      const resourceType = c.req.valid("json");
+      await db.insert(ResourceTypes).values(resourceType);
+      return c.json({ message: "Resource type created" });
+    }
+  )
+  // update resource type
+  .patch(
+    "/api/resourceTypes/:id/edit",
+    zValidator("param", z.object({ id: z.string() })),
+    zValidator("json", insertResourceTypeSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const resourceType = c.req.valid("json");
+      await db
+        .update(ResourceTypes)
+        .set(resourceType)
+        .where(eq(ResourceTypes.id, Number(id)));
+      return c.json({ message: "Resource type updated" });
+    }
+  )
   // get facilities
   .get("/api/facilities", async (c) => {
     try {
       const facilities = await db.select().from(Facilities);
-      return c.json({ message: "Facilities found", facilities });
+      return c.json(facilities);
     } catch (error) {
       throw new HTTPException(400, {
         res: c.json({ message: "Facilities not found" }, 400),
@@ -274,12 +319,12 @@ export const app = new Hono()
         .from(Facilities)
         .where(eq(Facilities.id, Number(id)))
         .limit(1);
-      return c.json({ message: "Facility found", facility });
+      return c.json(facility);
     }
   )
   // create facility
   .post(
-    "/api/facilities",
+    "/api/facilities/create",
     zValidator("json", FormFacilitySchema),
     async (c) => {
       // create resource
@@ -300,7 +345,7 @@ export const app = new Hono()
     }
   )
   .patch(
-    "/api/facilities/:id",
+    "/api/facilities/:id/edit",
     zValidator("param", z.object({ id: z.string() })),
     zValidator("json", FormFacilitySchema),
     async (c) => {
